@@ -59,7 +59,7 @@ public class FileUtil {
 	 * @author <a href="mailto:wentian.he@qq.com">hewentian</a>
 	 * @date 2016年5月23日 下午3:33:27
 	 * @param byteBuffer
-	 * @param filepath
+	 * @param filepath 文件路径
 	 * @return
 	 * @throws IOException
 	 */
