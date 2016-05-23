@@ -1,0 +1,43 @@
+以下是我的cassandra学习日志。
+
+2016年5月23日 下午4:34:50
+
+首先下载Cassandra, 我下载的是2.0版本的，下载地为：
+http://www.apache.org/dyn/closer.lua/cassandra/2.2.6/apache-cassandra-2.2.6-bin.tar.gz
+
+下载后放到一个目录，我的放到了E盘根目录下，将其解压出来，启动它很简单，双击如下文件即可：
+E:\apache-cassandra-2.2.6\bin\cassandra.bat
+
+建立表空间，表空间相当于数据库，命令如下：
+CREATE KEYSPACE IF NOT EXISTS hewentian  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3}
+
+在表空间中建立一张表：
+DROP TABLE IF EXISTS hewentian.user;
+
+CREATE TABLE IF NOT EXISTS hewentian.user (
+	id text,
+	name varchar,
+	age int,
+	avatar blob,
+	data map<text,text>,
+	PRIMARY KEY (id)
+);
+
+插入数据：
+INSERT INTO hewentian.user(id,name,age,data,avatar) VALUES(?,?,?,?,?);
+
+查询数据：
+SELECT * FROM hewentian.user WHERE id='1'
+
+删除数据：
+DELETE FROM hewentian.user WHERE id='2'
+
+
+查询：cassandra只能查询主键和有索引的列，如果你要查询某列，则你必须在上面建索引，命令如下：
+CREATE INDEX IF NOT EXISTS index_name ON hewentian.user(name)
+
+
+下面将继续学习CQL，文档在下载回来的软件包下面有，我本机的路径为：
+E:/apache-cassandra-2.2.6/doc/cql3/CQL.html
+
+
