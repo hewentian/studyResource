@@ -32,12 +32,162 @@ SELECT * FROM hewentian.user WHERE id='1'
 删除数据：
 DELETE FROM hewentian.user WHERE id='2'
 
-
 查询：cassandra只能查询主键和有索引的列，如果你要查询某列，则你必须在上面建索引，命令如下：
 CREATE INDEX IF NOT EXISTS index_name ON hewentian.user(name)
 
 
 下面将继续学习CQL，文档在下载回来的软件包下面有，我本机的路径为：
 E:/apache-cassandra-2.2.6/doc/cql3/CQL.html
+
+
+Cassandra的数据存储结构
+	Cassandra的数据模型是基于列族（Column Family）的四维或五维模型。它借鉴了 Amazon 的 Dynamo 和 Google's BigTable 
+的数据结构和功能特点，采用 Memtable 和 SSTable 的方式进行存储。在 Cassandra 写入数据之前，需要先记录日志 ( CommitLog )，
+然后数据开始写入到 Column Family 对应的 Memtable 中，Memtable 是一种按照 key 排序数据的内存结构，在满足一定条件时，再
+把 Memtable 的数据批量的刷新到磁盘上，存储为 SSTable 。
+
+
+架构
+	点对点分布式系统，集群中各节点平等，数据分布于集群中各节点，各节点间每秒交换一次信息。每个节点的commit log捕获
+写操作来确保数据持久性。数据先被写入memtable-内存中的数据结构，待该结构满后数据被写入SSTable-硬盘中的数据文件。所有
+的写内容被自动在集群中分区并复制。Cassandra数据库面向行。授权用户可连接至任意数据中心的任意节点，并通过类似SQL的CQL
+查询数据。集群中，一个应用一般包含一个keyspace，一个keyspace中包含多个表。
+	客户端连接到某一节点发起读或写请求时，该节点充当客户端应用与拥有相应数据的节点间的协调者(coordinator）以根据集群
+配置确定环中的哪个节点当获取这个请求。
+
+关键词
+Ø  Gossip：点对点通信协议，用以Cassandra集群中节点间交换位置和状态信息。
+Ø  Partitioner：决定如何在集群中的节点间分发数据，也即在哪个节点放置数据的第一个replica。
+Ø  Replica placement strategy：决定在哪些节点放置数据的其他replica。Cassandra在集群中的多个节点存储数据的多份拷贝-replicas来确保可靠和容错。
+Ø  Snitch：定义了复制策略用来放置replicas和路由请求所使用的拓扑信息
+Ø  cassandra.yaml文件：Cassandra主配置文件
+Ø  system:Cassandra的系统keyspace，存放table、keyspace的属性信息等。而属性信息可通过CQL或其他驱动设置。
+
+节点间通信
+Cassandra使用点对点通讯协议gossip在集群中的节点间交换位置和状态信息。gossip进程每秒运行一次，与至多3个其他节点交换信息，这
+样所有节点可很快了解集群中的其他节点信息。 
+
+配置gossip（在cassandra.ymal中设置）
+Ø  cluster_name:节点所属集群名，集群中每个节点应相同。
+Ø  listen_address：供其他节点连接至该节点的IP地址或主机名，当由localhost设为公共地址。
+Ø  seed_provider：逗号分隔的IP地址（种子列表），gossip通过种子节点学习环的拓扑，集群中各节点种子列表当相同。多数据中心集群中
+	每个数据中心的种子列表当至少包含一个该中心内的节点。
+Ø  storage_port：节点间通讯端口，集群中各节点当一致。一般为7000
+Ø  initial_token：用于single-node-per-token结构，节点在环空间只拥有一段连续的token范围。
+Ø  num_tokens：用于virtual nodes，定义了节点在环空间所拥有的随机分配的token数目。
+ 
+ 失败检测与恢复
+Ø  gossip可检测其他节点是否正常以避免将请求路由至不可达或者性能差的节点（后者需配置为dynamic snitch方可）。
+Ø  可通过配置phi_convict_threshold来调整失败检测的敏感度。
+Ø  对于失败的节点，其他节点会通过gossip定期与之联系以查看是否恢复而非简单将之移除。若需强制添加或移除集群中节点需使用nodetool工具。
+Ø  一旦某节点被标记为失败，其错过的写操作会有其他replicas存储一段时间（需开启hinted handoff，若节点失败的时间超过了max_hint_window_in_ms，
+错过的写不再被存储。）Down掉的节点经过一段时间恢复后需执行repair操作，一般在所有节点运行nodetool repair以确保数据一致。
+
+
+数据复制和分发
+	Cassandra中分发、复制同时进行。Cassandra被设计为点对点系统，会创建数据的多个副本存储在集群中的一组节点中。Cassandra
+中数据被组织为表，由primary key标识，primary key决定数据将被存储在哪个节点。需指定的内容
+Virtual nodes：指定数据与物理节点的所属关系
+Partitioner：在集群内划分数据
+Replicationstrategy：决定如何处理每行数据的replicas
+Snitch：定义replicationstrategy放置数据的replicas时使用的拓扑信息
+
+ 一致性哈希
+	表中每行数据由primary key标识，Cassandra为每个primarykey分配一个hash值，集群中每个节点拥有一个或多个hash值区间。这样
+便可根据primary key对应的hash值将该条数据放在包含该hash值的hash值区间对应的节点中。
+
+虚拟节点
+	若不使用虚拟节点则需手工为集群中每个节点计算和分配一个token。每个token决定了节点在环中的位置以及节点应当承担的一段连续的
+数据hash值的范围。如上图上半部分，每个节点分配了一个单独的token代表环中的一个位置，每个节点存储将row key映射为hash值之后落在
+该节点应当承担的唯一的一段连续的hash值范围内的数据。每个节点也包含来自其他节点的row的副本。而是用虚拟节点允许每个节点拥有多个
+较小的不连续的hash值范围。如上图中下半部分，集群中的节点是用了虚拟节点，虚拟节点随机选择且不连续。数据的存放位置也由row key映
+射而得的hash值确定，但是是落在更小的分区范围内。
+ 使用虚拟节点的好处
+Ø  无需为每个节点计算、分配token
+Ø  添加移除节点后无需重新平衡集群负载
+Ø  重建死掉的节点更快
+Ø  改善了在同一集群使用异种机器
+
+数据复制
+	Cassandra在多个节点中存放replicas以保证可靠性和容错性。replicationstrategy决定放置replicas的节点。replicas的总数由复制
+因子- replication factor确定，比如因子为2代表每行有两份拷贝，每份拷贝存储在不同的节点中。所有的replicas无主从之分。replication factor
+通常不能超过集群中节点总数。然而，可现增加replication facto之后在将节点增至期望的数量。当replication facto超过总结点数时，写
+操作被拒绝，但读操作可进行，只要满足期望的一致性级别。
+ 当前有两种可用的复制策略：
+Ø  SimpleStrategy：仅用于单数据中心，将第一个replica放在由partitioner确定的节点中，其余的replicas放在上述节点顺时针方向的后续节点中。
+Ø  NetworkTopologyStrategy：可用于较复杂的多数据中心。可以指定在每个数据中心分别存储多少份replicas。在每个数据中心放置replicas
+	的方式类似于SimpleStrategy，但倾向于将replicas放在不同rack，因为同一rack的节点倾向于同时失败。配置每个数据中心分别放置多少replicas
+	时要考虑两个主要方面：
+	(1)可满足本地读而非跨数据中心读；
+	(2)失败场景。两种常用的配置方式为(1)每个数据中心两份replicas，(2)每个数据中心3份replicas。当然，用于特殊目的的非对称配置也是可以的，
+	比如在读操作较频繁的数据中心配置3份replicas而在用于分析的数据中心配置一份replicas。
+
+复制策略在创建keyspace时指定，如
+CREATE KEYSPACE Excelsior WITH REPLICATION = { 'class' : 'SimpleStrategy','replication_factor' : 3 };
+CREATE KEYSPACE "Excalibur" WITH REPLICATION = {'class' :'NetworkTopologyStrategy', 'dc1' : 3, 'dc2' : 2};
+其中dc1、dc2这些数据中心名称要与snitch中配置的名称一致。
+
+Partitioners
+	在Cassandra中，table的每行由唯一的primarykey标识，partitioner实际上为一hash函数用以计算primary key的token。Cassandra依据
+这个token值在集群中放置对应的行。
+ 三种partitioner(在cassandra.yaml中设置)
+Ø  Murmur3Partitioner：当前的默认值，依据MurmurHash哈希值在集群中均匀分布数据。
+Ø  RandomPartitioner：依据MD5哈希值在集群中均匀分布数据。
+Ø  ByteOrderedPartitioner：依据行key的字节从字面上在集群中顺序分布数据。（不推荐使用）
+
+	Murmur3Partitioner和RandomPartitioner使用token向每个节点指派等量的数据从而将keyspace中的表均匀分布在环中，即使不同的表使用
+不同的primary key。读写请求均被均匀的分布。ByteOrderedPartitioner允许通过primary key顺序扫描（可通过index达到同样目的），但已引
+起如下问题(1)较复杂的负载均衡，(2)顺序的写易导致热点，(3)多表不均匀的负载均衡。
+ 注意：若使用虚拟节点(vnodes)则无需手工计算tokens。若不使用虚拟节点则必须手工计算tokens将所得的值指派给cassandra.ymal主配置文件中的initial_token参数。
+ 
+
+Snitches
+	提供网络拓扑信息，用以确定向/从哪个数据中心或者网架写入/读取数据。
+注意：(1)所有节点需用相同的snitch;(2)集群中已插入数据后又更改了snitch则需运行一次fullrepair。
+Ø  Dynamic snitching
+监控从不同replica读操作的性能，选择性能最好的replica。dynamic snitch默认开启，所有其他snitch会默认使用dynamic snitch 层。
+Ø  SimpleSnitch
+默认值，用于单数据中心部署，不使用数据中心和网架信息。使用该值时keyspace复制策略中唯一需指定的是replication factor
+Ø  RackInferringSnitch
+根据数据中心和网架确定节点位置，而数据中心及网架信息又有节点的IP地址隐含指示。
+Ø  PropertyFileSnitch
+根据数据中心和网架确定节点位置，而网络拓扑信息又由用户定义的配置文件cassandra-topology.properties 获取。在节点IP地址格式不统一无法
+隐含指示数据中心及网架信息或者复杂的复制组中使用该值。需注意的是：(1)配置文件中数据中心名需与keyspace中复制策略中指定的数据中心名称
+一致；(2)配置文件中需包含集群中任一节点；（3）集群中各节点内cassandra-topology.properties配置文件需相同。
+Ø  GossipingPropertyFileSnitch
+Ø  在cassandra-rackdc.properties配置文件中定义本节点所属的数据中心和网架，利用gossip协议与其他节点交换该信息。若从PropertyFileSnitch
+切至该值，则需逐节点逐次更新值为GossipingPropertyFileSnitch以确保gossip有时间传播信息。
+Ø  EC2Snitch
+用于部署在Amazon EC2中且所有节点在单个区域中的集群。
+Ø  EC2MultiRegionSnitch
+Ø  用于部署在AmazonEC2中，且节点跨多个区域的集群。
+
+
+客户端请求
+	client连接至节点并发出read/write请求时，该node充当client端应用与包含请求数据的节点(或replica)之间的协调者，它利用配置的partitioner
+和replicaplacement策略确定那个节点当获取请求。
+
+单数据中心的写请求
+	协调者(coordinator)将write请求发送到拥有对应row的所有replica节点，只要节点可用便获取并执行写请求。写一致性级别(write consistency level)
+确定要有多少个replica节点必须返回成功的确认信息。成功意味着数据被正确写入了commit log个memtable。 上例为单数据中心，11个节点，复制因子为3，写一
+致性等级为ONE的写情况。
+
+多数据中心的写请求
+	基本同上，但会在各数据中心分别选择一个协调者以处理该数据中心内的写请求。与client直接连接的coordinator节点只需将写请求发送到远程数据中心
+的coordinator一个节点即可，剩余的由该coordinator完成。若一致性级别设置为ONE或者LOCAL_QUORUM则仅与直接协调者位于同一数据中心的节点需返回成功
+确认。上例为双单数据中心，各11个节点，复制因子为6，写一致性等级为ONE的写情况。
+	
+读请求
+Ø直接读请求
+Ø后台读修复请求
+ 	与直接读请求联系的replica数目由一致性级别确定。后台读修复请求被发送到没有收到直接读请求的额外的replica，以确保请求的row在所有replica上一致。
+ 协调者首先与一致性级别确定的所有replica联系，被联系的节点返回请求的数据，若多个节点被联系，则来自各replica的row会在内存中作比较，若不一致，则协
+ 调者使用含最新数据的replica向client返回结果。 同时，协调者在后台联系和比较来自其余拥有对应row的replica的数据，若不一致，会向过时的replica发写请
+ 求用最新的数据进行更新。这一过程叫read repair。 上例为单数据中心，11个节点，复制因子为3，一致性级别为QUORUM的读情况。
+
+
+
+
+
 
 
