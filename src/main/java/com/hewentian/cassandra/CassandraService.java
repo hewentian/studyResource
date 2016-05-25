@@ -36,7 +36,7 @@ import com.hewentian.util.FileUtil;
 public class CassandraService {
 	/** Cassandra 集群 */
 	private Cluster cluster;
-	
+
 	/** Cassandra session */
 	private Session session;
 
@@ -81,7 +81,14 @@ public class CassandraService {
 	public void createDb() {
 		ResultSet rs = getSession()
 				.execute(
-						"CREATE KEYSPACE IF NOT EXISTS hewentian  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3}");
+						"CREATE KEYSPACE IF NOT EXISTS hewentian WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3}");
+		System.out.println(rs);
+	}
+
+	public void alterDB() {
+		ResultSet rs = getSession()
+				.execute(
+						"ALTER KEYSPACE hewentian WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 4}");
 		System.out.println(rs);
 	}
 
@@ -164,9 +171,22 @@ public class CassandraService {
 		}
 	}
 
+	public void updateData() {
+		ResultSet rs = getSession().execute(
+				"UPDATE hewentian.user SET age=25 WHERE id='1'");
+		System.out.println(rs.isExhausted());
+	}
+
 	public void deleteDate() {
 		ResultSet rs = getSession().execute(
 				"DELETE FROM hewentian.user WHERE id='2'");
+		System.out.println(rs.isExhausted());
+	}
+
+	public void deleteDate2() {
+		// 删除一个列中的数据
+		ResultSet rs = getSession().execute(
+				"DELETE data FROM hewentian.user WHERE id='3'");
 		System.out.println(rs.isExhausted());
 	}
 
@@ -193,6 +213,45 @@ public class CassandraService {
 			System.out.println("id=" + row.getString("id") + ", name="
 					+ row.getString("name"));
 		}
+	}
+
+	public void insertJson() {
+		ResultSet rs = getSession()
+				.execute(
+						"INSERT INTO hewentian.user JSON '{\"id\":\"3\", \"name\":\"tim3\"}'");
+		System.out.println(rs.isExhausted());
+	}
+
+	public void loadJson() {
+		ResultSet rs = getSession()
+				.execute("SELECT JSON * FROM hewentian.user");
+		for (Row row : rs) {
+			System.out.println(row);
+		}
+
+		rs = getSession().execute("SELECT JSON id, name FROM hewentian.user");
+		for (Row row : rs) {
+			System.out.println(row);
+		}
+		System.out.println(rs.isExhausted());
+	}
+
+	/**
+	 * 给表增加一个列
+	 */
+	public void alterTableAddColumn() {
+		ResultSet rs = getSession().execute(
+				"ALTER TABLE hewentian.user ADD birthday varchar");
+		System.out.println(rs.isExhausted());
+	}
+
+	/**
+	 * 删除表的一个列
+	 */
+	public void alterTableDropColumn() {
+		ResultSet rs = getSession().execute(
+				"ALTER TABLE hewentian.user DROP birthday");
+		System.out.println(rs.isExhausted());
 	}
 
 	public void close() {

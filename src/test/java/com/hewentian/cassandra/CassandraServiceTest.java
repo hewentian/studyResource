@@ -15,12 +15,19 @@ public class CassandraServiceTest {
 		CassandraService cs = new CassandraService();
 		cs.connect();
 		// cs.createDb();
+		// cs.alterDB();
 		// cs.createTable();
 		// cs.insertData();
 		// cs.loadData();
+		// cs.updateData();
+		// cs.insertJson();
+		// cs.loadJson();
 		// cs.createIndex();
 		// cs.deleteDate();
-		cs.query();
+		// cs.deleteDate2();
+		// cs.query();
+		// cs.alterTableAddColumn();
+		// cs.alterTableDropColumn();
 		cs.close();
 	}
 }
