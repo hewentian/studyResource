@@ -1,0 +1,128 @@
+Tomcat中对severLocation的配置（对于配置成灰色的处理）
+
+说明：Eclipse默认使用工作空间下项目数据，不会自动发布到Tomcat的webapps下
+ 
+双击Server，确保Server下没有项目，否则修改不了，还不能修改就clean一下
+ 
+ 
+
+弹出服务器配置信息窗口
+
+ 
+选择Use Tomcat installation，Server path会跟着改变，将Deploy path修改为webapps，默认是wtpwebapps，ctrl+s保存
+
+部署项目到Server，启动，发现项目发布到Tomcat下的webapps了。
+ 
+ 
+解决了该问题：先将该server关闭（stop），然后在model模式下把关联项目remove，注意一定要保存才行，然后在overView配置。
+
+
+
+文件复制是分离的，
+如一个C.JS文件分别被A.HTML、B.HTML引入了，在A.HTML中对它的修改，如全局变量，在B中是看不到变化的。
+
+要将ECLIPSE的编码设置为UTF-8: Window-Preferences-General-Workspace在右则设置为UTF-8
+
+如果项目的是乱码，在WINDOWS目录下找到那个文件，打开，将其复制到ECLIPSE中，它会自动转码的。
+
+
+如何在 cmd 命令行中查看、修改、删除与添加环境变量
+
+1. 关于Java环境变量的配置
+
+ http://www.2cto.com/kf/201203/122872.html
+
+2.环境变量的定义
+
+环境变量是一个具有特定名字的对象，它包含了一个或者多个应用程序所将使用到的信息。例如path，当要求系统运行一
+
+个程序而没有告诉它程序所在的完整路径时，系统除了在当前目录下面寻找此程序外，还应到path中指定的路径去找。用
+
+户通过设置环境变量，来更好的运行进程。
+
+ 
+
+3.查看，修改
+
+ 
+
+首先明确一点，所有的在cmd命令行下对环境变量的修改只对当前窗口有效，不是永久性的修改。也就是说当关闭此cmd命
+
+令行窗口后，将不再起作用。永久性修改环境变量的方法有两种：一种是直接修改注册表，另一种是通过我的电脑-〉属
+
+性-〉高级，来设置系统的环境变量
+
+ 
+
+显示、设置或删除 cmd.exe 环境变量。
+
+SET [variable=[string]]
+
+variable 指定环境变量名。
+string 指定要指派给变量的一系列字符串。
+
+要显示当前环境变量，键入不带参数的 SET。
+
+ 
+
+ 
+
+1、查看当前所有可用的环境变量：输入 set 即可查看。
+
+2、查看某个环境变量：输入 “set 变量名”即可，比如想查看path变量的值，即输入 set path
+
+ 
+
+4.Windows 和 linux 区别
+
+一、查看所有环境变量的名称和值：
+Linux下：export
+Windows下：set
+二、根据名称查该环境变量的值：
+Linux下：echo $环境变量名
+比如：echo $ORACLE_HOME
+Windows下：set 环境变量名
+
+
+eclipse中使用maven插件的时候，运行run as maven build的时候报错
+-Dmaven.multiModuleProjectDirectory system propery is not set. Check $MAVEN_HOME environment variable and 
+
+mvn script match.
+ 
+直接的解决方法：使用低版本的maven
+ 
+可以设一个环境变量M2_HOME指向你的maven安装目录
+MAVEN_HOME=D:\Apps\apache-maven-3.3.1
+然后在Window->Preference->Java->Installed JREs->Edit
+在Default VM arguments中设置
+-Dmaven.multiModuleProjectDirectory=$MAVEN_HOME
+
+
+
+数组中已经存在两个可以直接用来重排序的方法：reverse()和sort()。reverse()方法会对反转数组项的顺序。请看下面
+
+的例子：
+
+var values = [1, 2, 3, 4, 5];
+values.reverse();
+alert(values);  //5,4,3,2,1
+
+
+当你使用DWZ框架的时候，动态设置select的值，可能会没反应，此时，你要用如下的方法设置：
+var language = msg.data.language;
+$("select[name='language'] option", "#dt_form").each(function() {
+	if (this.value == language) {
+		$(this).attr("selected", "selected");
+		
+		// 要加上这两行，因为DWZ会帮我会生成这些用于显示
+		$("a[name='language']", "#dt_form").val(language);
+		$("a[name='language']", "#dt_form").text(this.text);
+	}
+});
+
+
+你在HTML中输入的有换行、段落等的文本存到DB中，再取回并显示到网页中的时候，可能这些换行、分段等
+标识可能已经没有了， 其实你只要在添加数据的时候添加一个pre标签就可以了
+<pre> 正文 就可以保留换行符号等 </pre>
+
+
