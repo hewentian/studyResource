@@ -126,3 +126,90 @@ $("select[name='language'] option", "#dt_form").each(function() {
 <pre> 正文 就可以保留换行符号等 </pre>
 
 
+解决cookie跨域问题，在cookiey设置的时候加上PATH，如：document.cookie = cookieString + "; path=/";
+
+
+公元纪年换算成干支纪年
+算法：
+1. 天干算法：用公元纪年数减3，除以10（不管商数）所得余数，就是天干所对应的位数；
+2. 地支算法：用公元纪年数减3，除以12（不管商数）所得余数，就是地支所对应的位数；
+天干：甲、乙、丙、丁、戊、己、庚、辛、壬、癸
+地支：子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥
+
+例1. 我们以2010年为例；
+天干算法： 2010-3=2007， 2007/10=200余7， 7对应天干第7位是庚，即天干为庚；
+地支算法： 2010-3=2007， 2007/12=167余3， 3对应地支第3位是寅，即地支为寅；
+综上公元2010是用天干地支纪年为庚寅年。为使各位信任此算法，我再举一例来说明：
+
+例2. 我们再以1987年为例；
+天干算法： 1987-3=1984， 1984/10=198余4， 4对应天干第4位是丁，即天干为丁；
+地支算法： 1987-3=1984， 1984/12=165余4， 4对应地支第4位是卯，即地支为卯；
+综上公元1987是用天干地支纪年为丁卯年。
+
+
+
+将查询结果下载，实现如下：
+@RequestMapping(value = "hostDownStatSumDown")
+	public void hostDownStatSumDown(HttpServletResponse response,
+			String startTime, String endTime) throws Exception {
+		byte[] buf = baseService.getHostDownStatsSumDown(startTime, endTime);
+		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
+		int contentLength = bais.available();
+		OutputStream os = null;
+
+		try {
+			String filename = "爬取数据汇总-" + DateUtil.getDateToString(new Date())
+					+ ".csv";
+			response.setContentType("application/force-download");
+			response.addHeader("Content-Disposition", "attachment;filename="
+					+ URLEncoder.encode(filename, "UTF-8"));
+			response.setContentLength(contentLength);
+			os = response.getOutputStream();
+
+			byte[] b = new byte[1024];
+			int len = 0;
+			while ((len = bais.read(b)) != -1) {
+				os.write(b, 0, len);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (null != bais) {
+				try {
+					bais.close();
+					bais = null;
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+			}
+			if (null != os) {
+				try {
+					os.close();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	@Override
+	public byte[] getHostDownStatsSumDown(String startTime, String endTime) {
+		byte[] bytes = null;
+		Map<String, Integer> res = baseDao.getHostDownStatsSum(startTime,
+				endTime);
+
+		StringBuilder sb = new StringBuilder("下载数,处理数,修改数,新增数");
+		sb.append(System.getProperty("line.separator")); // 注意，一定要用这种方式产生换行符
+		sb.append(res.get("downloadNum") + ",");
+		sb.append(res.get("handleNum") + ",");
+		sb.append(res.get("modifyNum") + ",");
+		sb.append(res.get("newNum"));
+
+		try {
+			bytes = sb.toString().getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return bytes;
+	}
