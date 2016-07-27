@@ -254,3 +254,5 @@ ALTER TABLE hewentian.user ADD birthday varchar
 ALTER TABLE hewentian.user DROP birthday
 
 
+Cassandra的 PreparedStatement 里面的占位符不能使用在DB上，DB要写明，
+像这样：session.prepare("update webstore.config set d_data=? where d_type=? and d_key=?");

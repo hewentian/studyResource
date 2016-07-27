@@ -91,12 +91,16 @@ mvn script match.
  
 直接的解决方法：使用低版本的maven
  
-可以设一个环境变量M2_HOME指向你的maven安装目录
+可以设一个环境变量MAVEN_HOME指向你的maven安装目录
 MAVEN_HOME=D:\Apps\apache-maven-3.3.1
 然后在Window->Preference->Java->Installed JREs->Edit
 在Default VM arguments中设置
 -Dmaven.multiModuleProjectDirectory=$MAVEN_HOME
 
+有时按上面的还方法不行的话，可以在另一JRE设置Default VM arguments，它
+同样在然后在Window->Preference->Java->Installed JREs->Edit这里，一个是默认的，另一个不是默认的，也要设置
+
+如果两个都设置了，还是这样，尝试着将另一个没用的JRE删除掉，这样应该就不会再报错了
 
 
 数组中已经存在两个可以直接用来重排序的方法：reverse()和sort()。reverse()方法会对反转数组项的顺序。请看下面
@@ -213,3 +217,121 @@ $("select[name='language'] option", "#dt_form").each(function() {
 		}
 		return bytes;
 	}
+	
+	// 在跨域访问的时候，客户端可能会有问题，这时，在服务器端里面返回的时候，做一下设定，如下：
+	response.addHeader("Access-Control-Allow-Origin", "*");
+	
+	
+	windows下的notepad另存为选项有关于编码的选择，ANSI、Unicode、Unicode big endian、UTF-8四种选择编码方式。其中ANSI是与你使用的windows操作系统的语言有关系的，向windows 7 简体中文版就是GBK（用一个字节表示英文，用两个字节表示一个中文）。第二个选项Unicode其实是指Unicode16 little endian 。 第四个选项UTF-8大家都知道吧。但是有一个要注意的地方是，微软在windows平台下用自带的notepad.exe生成UTF-8编码的文本文件时会在文件开头加入三个字节的BOM（byte order mark）EF BB BF，这样就通过有无BOM区别文本的编码是ANSI（GBK）还是UTF-8。
+但是了，UTF-8也可以不要这三个字节的BOM，像用php的GD库生成图片时，如果有了BOM就会出错。而且在windows平台上，用notepad打开一个没有BOM的文本文件，也能正常显示，而不会当做ANSI（GBK）来处理。但是有这样的一个趣事，就是在notepad中输入“联通”两个中文，保存到本地，再打开，会发现乱码。这是为什么呢？
+这个就设计到notepad判断文本编码的原理了。（这个原理是根据实验结果推测的，本人不保证其绝对与微软的思路一致）
+notepad打开一个文本，有BOM这很容易判断是UTF系列编码，因为UTF-8，UTF-16 big endian, UTF-16 little endian ，UTF-32 big endian, UTF-32 little endian 的BOM都不一样。但是如果文本没有BOM，又不能立刻判定其为ANSI（GBK）编码，因为也有可能是无BOM的UTF-8。所以notepad会根据UTF-8的编码原理推测编码
+ 
+UCS-4编码                UTF-8字节流
+U+00000000 – U+0000007F    0xxxxxxx
+U+00000080 – U+000007FF    110xxxxx 10xxxxxx
+U+00000800 – U+0000FFFF    1110xxxx 10xxxxxx 10xxxxxx
+U+00010000 – U+001FFFFF    11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+……
+比如中文都是用三个字节表示，若无BOM，则从文本第一个字节开始，按照UTF-8的编码规则去验证字符编码，例如：
+第一个字节的第一个bit为0，说明是个ANSII字符，继续查看第二个比特，若第一个比特是1，则查看第二个比特，若第二个比特为0，说明这不是一个UTF-8编码的文本。依次类推，若一旦有一个bit不满足UTF-8编码要求，就判定文本为ANSI（GBK），若知道文本结束都不能判定，则说明文本是UTF-8编码的。
+所以现在我们就能明白为什么在notepad中“联通”会乱码了。notepad中文本默认按ANSI（GBK）保存，没有BOM，打开时notepad会判断其编码，巧合的是联通的ANSI（GBK）编码为 C1 AA CD A8
+11000001  10101010  11001101  10101000。这正好也是两个UTF-8编码的文字，当然这不是中文啦。所以notepad会认为这是一个UTF-8编码的文本,会安装UTF-8的格式来解析字符，于是乱码了。
+知道了原理，我们就可以编写判断文本编码的软件了。这里我就不贴代码了。
+	
+	String filename = "爬取数据汇总-" + DateUtil.getDateToString(new Date())
+					+ ".csv";
+			response.setContentType("application/force-download;charset=UTF-8");
+			response.addHeader("Content-Disposition", "attachment;filename="
+					+ URLEncoder.encode(filename, "UTF-8"));
+			response.setContentLength(contentLength);
+			response.addHeader("Access-Control-Allow-Origin", "*");
+			response.setCharacterEncoding("UTF-8");
+			os = response.getOutputStream();
+
+			byte[] b = new byte[1024];
+			int len = 0;
+			/////////////////////////////
+			os.write(0xEF);
+			os.write(0xBB);// bom EF BB BF
+			os.write(0xBF);
+			/////////////////////////////
+			while ((len = bais.read(b)) != -1) {
+				os.write(b, 0, len);
+			}
+			
+			
+函数名： ceil
+用 法： double ceil(double x);
+功 能： 返回大于或者等于指定表达式的最小整数
+头文件：math.h
+返回数据类型：double
+
+floor() 方法执行的是向下取整计算，它返回的是小于或等于函数参数，并且与之最接近的整数。
+
+
+普通java类获取 spring中的bean方法
+
+编写一个工具类
+
+ 实现spring 的ApplicationContextAware接口
+
+代码如下：
+
+package com.xnh.web.utils;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+/**
+ * 
+ * @author Kylin
+ *
+ */
+public class ApplicationUtil implements ApplicationContextAware{
+    private static ApplicationContext applicationContext;  
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        ApplicationUtil.applicationContext = applicationContext;
+    }
+    public static Object getBean(String name){
+        return applicationContext.getBean(name);
+    }
+}
+
+然后需要在application中把把org.springframework.context.ApplicationContext作为属性注入给类
+
+其实只需要这样写就可以如下：
+<bean id="app" class="com.xnh.web.utils.ApplicationUtil">
+</bean>
+
+
+这样子就是被注入进去了
+
+运行的时候只需要加载你的applicationContext.xml
+
+*普通java类main方法这样调用
+
+new ClassPathXmlApplicationContext("applicationContext.xml");
+
+ApplicationUtil.getBean("rssService");
+
+*web工程直接调用
+
+ApplicationUtil.getBean("rssService");
+
+ 
+
+就大功告成了，如果按我的方法不成功，请看看是不是没有加载applicationContext.xml，或者你想getbean的方法没有在xml里面配置
+
+据我测试没有在xml配置而仅仅使用注解貌似是不成功的
+
+有问题留言哦
+
+
+sql中，insert into yourTable(f1,f2) values(100,'abc')字符串数据是用单引号包在外面的，
+如果插入的数据中包含单引号，就需要处理，你可以将单引号替换成两个单引号，在sql中连续两个
+单引号就表示一个单引号字符，例如insert into yourTable(f1,f2) values(100,'ab''c')表示
+插入新记录f2字段为ab'c 使用函数replace可以实现这个功能：
+
+
