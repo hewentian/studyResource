@@ -335,3 +335,102 @@ sql中，insert into yourTable(f1,f2) values(100,'abc')字符串数据是用单�
 插入新记录f2字段为ab'c 使用函数replace可以实现这个功能：
 
 
+eclipse 设置每行的长度
+	window->preferences->java->code style->formatter->edit->line wrapping->maximum line width 修改后保存就可以了
+
+PostgreSQL中表名、字段名大小写问题长度为63超过会自动截
+spring中用log4j的话要加上 slf4j-log4j12-1.7.12.jar，否则会报错
+
+有一些要用到连接池的地方，可能要提前将它的驱动包放到tomcat_home/lib的目录下，否则，有可能一直报错。
+
+
+ maven打包在MANIFEST.MF文件中增加属性
+ 	最近在学习java agent，需要在生成的jar包里面的 META-INF/MAINIFEST.MF 必须包含 Premain-Class这个属性。采用MAVEN的maven-jar-plugin插件完成。
+maven-jar-plugin插件默认生成的MAINIFEST.MF文件包含以下几项：
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: ${user.name}
+Build-Jdk: ${java.version}
+
+现在要新增一个Premain-Class、Boot-Class-Path、Can-Redefine-Classes属性，配置如下：
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Premain-Class>
+								com.hewentian.sizeofobject.SizeOfObject
+							</Premain-Class>
+							<Boot-Class-Path></Boot-Class-Path>
+							<Can-Redefine-Classes>false</Can-Redefine-Classes>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			
+maven支持多source directory
+<plugin>  
+  <groupId>org.codehaus.mojo</groupId>  
+  <artifactId>build-helper-maven-plugin</artifactId>  
+  <version>1.1</version>  
+  <executions>  
+    <execution>  
+      <id>add-source</id>  
+      <phase>generate-sources</phase>  
+      <goals>  
+        <goal>add-source</goal>  
+      </goals>  
+      <configuration>  
+        <sources> 
+           <!-- Source folder    -->
+          <source>src/config/java</source>  
+          <source>src/main/java</source>  
+          <source>src/member/java</source>  
+        </sources>  
+      </configuration>  
+    </execution>  
+  </executions>  
+</plugin> 
+
+设置jdk版本
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-compiler-plugin</artifactId>
+	<version>3.1</version>
+	<configuration>
+		<source>1.7</source>
+		<target>1.7</target>
+		<encoding>UTF8</encoding>
+	</configuration>
+</plugin>
+
+
+
+有时候，你可能会在eclipse中对一段字符用MD5加密后产生的密文，与单独将此WAR包放到tomcat中产生的密文不同，
+产生这种原因可能是字符集的问题。
+你在{TOMCAT_HOME}/conf/server.xml中的配置如下，还不行。
+<Connector URIEncoding="UTF-8" ...>
+
+你还要在{TOMCAT_HOME}/bin/catalina.bat或catalina.sh中加上-Dfile.encoding=UTF-8参数，在如下4行中。
+rem Execute Java with the applicable properties
+if not "%JPDA%" == "" goto doJpda
+if not "%SECURITY_POLICY_FILE%" == "" goto doSecurity
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% %DEBUG_OPTS% -Dfile.encoding=UTF-8 -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
+goto end
+:doSecurity
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% %DEBUG_OPTS% -Dfile.encoding=UTF-8 -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Djava.security.manager -Djava.security.policy=="%SECURITY_POLICY_FILE%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
+goto end
+:doJpda
+if not "%SECURITY_POLICY_FILE%" == "" goto doSecurityJpda
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% %JPDA_OPTS% %DEBUG_OPTS% -Dfile.encoding=UTF-8 -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
+goto end
+:doSecurityJpda
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% %JPDA_OPTS% %DEBUG_OPTS% -Dfile.encoding=UTF-8 -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Djava.security.manager -Djava.security.policy=="%SECURITY_POLICY_FILE%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
+goto end
+
