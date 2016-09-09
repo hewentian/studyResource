@@ -80,6 +80,10 @@ public class PoiUtilTest {
 			String filename = "简报下载-" + System.currentTimeMillis() + ".xls";
 			response.setContentType("application/vnd.ms-excel;charset=UTF-8");
 			response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+			// 防止firefore文件名乱码
+//			filename = new String(filename.getBytes("UTF-8"), "ISO-8859-1");
+//			response.setContentType("application/vnd.ms-word;charset=UTF-8");
+//			response.addHeader("Content-Disposition", "attachment;filename=" + filename);
 			response.setContentLength(contentLength/* + 3 */); // bom has 3
 			response.addHeader("Access-Control-Allow-Origin", "*");
 			response.setCharacterEncoding("UTF-8");
@@ -148,6 +152,9 @@ public class PoiUtilTest {
 
 		try {
 			String filename = "简报下载-" + System.currentTimeMillis() + ".docx";
+//			filename = new String(filename.getBytes("UTF-8"), "ISO-8859-1");
+//			response.setContentType("application/vnd.ms-word;charset=UTF-8");
+//			response.addHeader("Content-Disposition", "attachment;filename=" + filename);
 			response.setContentType("application/vnd.ms-word;charset=UTF-8");
 			response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
 			response.setContentLength(contentLength);
