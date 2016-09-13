@@ -186,6 +186,7 @@ public class WindowsUtil {
 
 		try {
 			Process process = Runtime.getRuntime().exec("cmd /" + cmdType + " " + cmd);
+			process.waitFor();
 			lnr = new LineNumberReader(new InputStreamReader(process.getInputStream()));
 
 			StringBuilder sb = new StringBuilder();
