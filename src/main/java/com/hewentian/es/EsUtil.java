@@ -8,6 +8,8 @@ import io.searchbox.core.Delete;
 import io.searchbox.core.DocumentResult;
 import io.searchbox.core.Get;
 import io.searchbox.core.Index;
+import io.searchbox.core.Search;
+import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.CreateIndex.Builder;
 import io.searchbox.indices.DeleteIndex;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.JsonObject;
+import com.hewentian.entity.EsUser;
 
 /**
  * 
@@ -153,7 +156,7 @@ public class EsUtil {
 
 		return res;
 	}
-	
+
 	public static String getMapping(JestClient jestClient, String indexName, String type) {
 		String res = null;
 		GetMapping getMapping = new GetMapping.Builder().addIndex(indexName).addType(type).build();
@@ -166,10 +169,10 @@ public class EsUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return res;
 	}
-	
+
 	public static boolean addDoc(JestClient jestClient, String indexName, String type) throws Exception {
 		boolean res = false;
 		JsonObject source = new JsonObject();
@@ -177,31 +180,31 @@ public class EsUtil {
 		source.addProperty("age", "25");
 		source.addProperty("sex", "male");
 		source.addProperty("address", "Canton, Guangdong, China");
-		
+
 		String id = "200824131208";
-		
+
 		Index index = new Index.Builder(source).index(indexName).type(type).id(id).build();
 		DocumentResult dr = jestClient.execute(index);
 		if (dr.isSucceeded()) {
 			res = true;
 		}
-		
+
 		return res;
 	}
-	
+
 	public static DocumentResult getDoc(JestClient jestClient, String indexName, String id) throws Exception {
 		DocumentResult dr = null;
-		
+
 		Get get = new Get.Builder(indexName, id).build();
 		dr = jestClient.execute(get);
 		System.out.println(dr.getJsonString());
-		
+
 		return dr;
 	}
-	
-	public static boolean deleteDoc(JestClient jestClient, String indexName,String type, String id) {
+
+	public static boolean deleteDoc(JestClient jestClient, String indexName, String type, String id) {
 		boolean res = false;
-		
+
 		Delete delete = new Delete.Builder(id).index(indexName).type(type).build();
 		try {
 			DocumentResult dr = jestClient.execute(delete);
@@ -211,8 +214,21 @@ public class EsUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return res;
+	}
+
+	public static void search(JestClient jestClient, String indexName, String type, String query) throws Exception {
+		Search search = new Search.Builder(query).addIndex(indexName).addType(type).build();
+		SearchResult sr = jestClient.execute(search);
+		System.out.println(sr.getTotal());
+		System.out.println(sr.getJsonString());
+		if (sr.isSucceeded()) {
+			List<EsUser> list = sr.getSourceAsObjectList(EsUser.class);
+			for (EsUser u : list) {
+				System.out.println(u);
+			}
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -222,12 +238,13 @@ public class EsUtil {
 		// createIndex(jestClient, indexName);
 		// deleteIndex(jestClient, indexName);
 		// addMapping(jestClient, indexName ,type);
-		getMapping(jestClient, indexName, type);
+		// getMapping(jestClient, indexName, type);
 		// deleteMapping(jestClient, indexName, type);
-//		addDoc(jestClient, indexName, type);
-//		getDoc(jestClient, indexName, "200824131208");
-//		deleteDoc(jestClient, indexName, type, "200824131208");
-		//http://www.xdemo.org/lucene4-8-ikanalyzer-springmvc4-jsoup-quartz/
-		//http://blog.csdn.net/qian_348840260/article/details/20644445
+		// addDoc(jestClient, indexName, type);
+		// getDoc(jestClient, indexName, "200824131208");
+		// deleteDoc(jestClient, indexName, type, "200824131208");
+		String query = "{\"from\": 0,\"size\": 10}";
+		search(jestClient, indexName, type, query);
+		// http://www.xdemo.org/lucene4-8-ikanalyzer-springmvc4-jsoup-quartz/
 	}
 }

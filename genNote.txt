@@ -434,3 +434,32 @@ goto end
 %_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% %JPDA_OPTS% %DEBUG_OPTS% -Dfile.encoding=UTF-8 -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Djava.security.manager -Djava.security.policy=="%SECURITY_POLICY_FILE%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
 goto end
 
+
+Spring Bean配置默认为单实例 pring Bean生命周期
+Bean默认的是单例的.
+
+如果不想单例需要如下配置：
+<bean id="user" class="..." singleton="false"/>
+
+singleton就是配置这个bean是否是单例的，如果不写，就是默认值true。
+
+ 
+
+注解：
+
+spring Bean生命周期
+
+1.Bean的作用域可以通过Bean标签的scope属性进行设置，Bean的作用域包括：
+默认情况下scope="singleton"，那么该Bean是单例，任何人获取该Bean实例的都为同一个实例；
+scope="prototype"，任何一个实例都是新的实例；
+scope="request"，在WEB应用程序中，每一个实例的作用域都为request范围；
+scope="session",在WEB应用程序中，每一个实例的作用域都为session范围；
+
+注意：在默认情况下，Bean实例在被Spring容器初始化的时候，就会被实例化，默认调用无参数的构造方法。在其它情况下，Bean将会在获取实例的时候才会被实例化。
+
+ 
+
+2.Bean可以通过指定属性init-method指定初始化后执行的方法，以及通过指定属性destroy-method销毁时执行的方法。
+
+语法：<bean ....   destroy-method="销毁时调用的方法名" init-method="初始化后执行的方法名"/> 
+ 
