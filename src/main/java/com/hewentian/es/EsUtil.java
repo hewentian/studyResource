@@ -10,6 +10,7 @@ import io.searchbox.core.Get;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
+import io.searchbox.core.Update;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.CreateIndex.Builder;
 import io.searchbox.indices.DeleteIndex;
@@ -179,9 +180,10 @@ public class EsUtil {
 		source.addProperty("name", "Tim");
 		source.addProperty("age", "25");
 		source.addProperty("sex", "male");
-		source.addProperty("address", "Canton, Guangdong, China");
+		source.addProperty("address", "Canton, Guangdong, China, usa");
+		source.addProperty("birthday", "1989.05.01");
 
-		String id = "200824131208";
+		String id = "200824131211";
 
 		Index index = new Index.Builder(source).index(indexName).type(type).id(id).build();
 		DocumentResult dr = jestClient.execute(index);
@@ -197,6 +199,7 @@ public class EsUtil {
 
 		Get get = new Get.Builder(indexName, id).build();
 		dr = jestClient.execute(get);
+		System.out.println(dr.isSucceeded());
 		System.out.println(dr.getJsonString());
 
 		return dr;
@@ -230,21 +233,44 @@ public class EsUtil {
 			}
 		}
 	}
+	
+	public static DocumentResult updateDoc(JestClient jestClient, String indexName,String type, String id) throws Exception {
+		DocumentResult dr = null;
+
+		Get get = new Get.Builder(indexName, id).build();
+		dr = jestClient.execute(get);
+		if (dr.isSucceeded()) {
+			JsonObject j = dr.getJsonObject();
+			System.out.println(j);
+			JsonObject source = j.getAsJsonObject("_source");
+			System.out.println(source);
+			source.addProperty("address", "Tokyo");
+			
+			JsonObject json = new JsonObject();
+			json.add("doc", source);
+			Update update = new Update.Builder(json.toString()).index(indexName).type(type).id(id).build();
+			DocumentResult dr2 = jestClient.execute(update);
+			System.out.println(dr2.isSucceeded());
+		} 
+		return dr;
+	}
 
 	public static void main(String[] args) throws Exception {
 		JestClient jestClient = getJestClient();
 		String indexName = "es_test";
 		String type = "user";
-		// createIndex(jestClient, indexName);
+//		 createIndex(jestClient, indexName);
 		// deleteIndex(jestClient, indexName);
-		// addMapping(jestClient, indexName ,type);
+//		 addMapping(jestClient, indexName ,type);
 		// getMapping(jestClient, indexName, type);
 		// deleteMapping(jestClient, indexName, type);
-		// addDoc(jestClient, indexName, type);
-		// getDoc(jestClient, indexName, "200824131208");
-		// deleteDoc(jestClient, indexName, type, "200824131208");
-		String query = "{\"from\": 0,\"size\": 10}";
-		search(jestClient, indexName, type, query);
+		 addDoc(jestClient, indexName, type);
+//		 getDoc(jestClient, indexName, "200824131208");
+//		updateDoc(jestClient, indexName,type, "200824131208");		
+//		 deleteDoc(jestClient, indexName, type, "200824131208");
+//		String query = "{\"from\": 0,\"size\": 10}";
+//		query = "{\"query\": {\"regexp\": {\"address\": \"?Canton?\"}}}";
+//		search(jestClient, indexName, type, query);
 		// http://www.xdemo.org/lucene4-8-ikanalyzer-springmvc4-jsoup-quartz/
 	}
 }

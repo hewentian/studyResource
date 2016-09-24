@@ -87,6 +87,7 @@ public class DateExtractENUtil extends DateExtractUtil {
 		datePtnMap.put("(\\d{1,4}\\d{1,2}\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2})",	"yyyyMMdd HH:mm:ss");
 		datePtnMap.put("(\\d{1,4}\\d{1,2}\\d{1,2} \\d{1,2}:\\d{1,2})", "yyyyMMdd HH:mm");
 		datePtnMap.put("(\\d{1,4}\\d{1,2}\\d{1,2} \\d{1,2})", "yyyyMMdd HH");
+		datePtnMap.put("(\\d{1,2}:\\d{1,2} (am|pm) \\d{1,2}-\\d{1,2}-\\d{1,4})", "h:mm aa MM-dd-yyyy");
 		datePtnMap.put("(\\d{1,4}\\d{1,2}\\d{1,2})", "yyyyMMdd");
 
 		// 下面是英式的日期写法：日 月,年
