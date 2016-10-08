@@ -1,0 +1,173 @@
+import java.util.Locale;
+
+Locale locale = new Locale("Enlish");
+Locale[] list = Locale.getAvailableLocales();
+for (int i = 0; i < list.length; i++) {
+	String str = list[i].getDisplayCountry();
+	if (null != str) {
+		str = list[i].getDisplayCountry(locale) + " "// 获得国家英文拼写，如中国China
+				+ list[i].getDisplayCountry() + "("// 获得国家的本国拼写，如中国 中国
+				+ list[i].getDisplayLanguage() + ") "
+				// 获得国家的语言，例如中国 中文 + list[i].getLanguage() + "_"
+				+ list[i].getCountry();// 获得该国语言的代码 如中国 中文 zh_CN
+		System.out.println((i + 1) + ": " + str);
+	}
+}
+
+
+1: Malaysia 马来西亚(马来文) MY
+2: Qatar 卡塔尔(阿拉伯文) QA
+3: Iceland 冰岛(冰岛文) IS
+4: Finland 芬兰(芬兰文) FI
+5:  (波兰文) 
+6: Malta 马耳他(英文) MT
+7: Switzerland 瑞士(意大利文) CH
+8: Belgium 比利时(荷兰文) BE
+9: Saudi Arabia 沙特阿拉伯(阿拉伯文) SA
+10: Iraq 伊拉克(阿拉伯文) IQ
+11: Puerto Rico 波多黎哥(西班牙文) PR
+12: Chile 智利(西班牙文) CL
+13:  (芬兰文) 
+14: Austria 奥地利(德文) AT
+15:  (丹麦文) 
+16: United Kingdom 英国(英文) GB
+17: Panama 巴拿马(西班牙文) PA
+18:  (塞尔维亚文) 
+19: Yemen 也门(阿拉伯文) YE
+20: Macedonia 马其顿王国(马其顿文) MK
+21:  (马其顿文) 
+22: Canada 加拿大(英文) CA
+23: Vietnam 越南(越南文) VN
+24: Netherlands 荷兰(荷兰文) NL
+25: United States 美国(西班牙文) US
+26: China 中国(中文) CN
+27: Honduras 洪都拉斯(西班牙文) HN
+28: United States 美国(英文) US
+29:  (法文) 
+30:  (泰文) 
+31:  (阿拉伯文) 
+32: Morocco 摩洛哥(阿拉伯文) MA
+33:  (拉托维亚文(列托)) 
+34:  (德文) 
+35: Indonesia 印度尼西亚(印度尼西亚文) ID
+36:  (克罗地亚文) 
+37: South Africa 南非(英文) ZA
+38: South Korea 韩国(朝鲜文) KR
+39: Tunisia 突尼斯(阿拉伯文) TN
+40:  (印度尼西亚文) 
+41:  (日文) 
+42: Serbia 塞尔维亚(塞尔维亚文) RS
+43: Belarus 白俄罗斯(白俄罗斯文) BY
+44: Taiwan 台湾地区(中文) TW
+45: Sudan 苏丹(阿拉伯文) SD
+46:  (葡萄牙文) 
+47:  (冰岛文) 
+48: Japan 日本(日文) JP
+49: Bolivia 玻利维亚(西班牙文) BO
+50: Algeria 阿尔及利亚(阿拉伯文) DZ
+51:  (马来文) 
+52: Argentina 阿根廷(西班牙文) AR
+53: United Arab Emirates 阿拉伯联合酋长国(阿拉伯文) AE
+54: Canada 加拿大(法文) CA
+55:  (斯洛文尼亚文) 
+56:  (西班牙文) 
+57: Lithuania 立陶宛(立陶宛文) LT
+58: Montenegro 黑山(塞尔维亚文) ME
+59: Syria 叙利亚(阿拉伯文) SY
+60: Russia 俄罗斯(俄文) RU
+61: Belgium 比利时(法文) BE
+62: Spain 西班牙(西班牙文) ES
+63:  (保加利亚文) 
+64: Israel 以色列(希伯来文) IL
+65:  (瑞典文) 
+66:  (英文) 
+67:  (希伯来文) 
+68: Denmark 丹麦(丹麦文) DK
+69: Costa Rica 哥斯达黎加(西班牙文) CR
+70: Hong Kong 香港(中文) HK
+71:  (中文) 
+72: Spain 西班牙(加泰罗尼亚文) ES
+73: Thailand 泰国(泰文) TH
+74: Ukraine 乌克兰(乌克兰文) UA
+75: Dominican Republic 多米尼加共和国(西班牙文) DO
+76: Venezuela 委内瑞拉(西班牙文) VE
+77: Poland 波兰(波兰文) PL
+78: Libya 利比亚(阿拉伯文) LY
+79: Jordan 约旦(阿拉伯文) JO
+80:  (意大利文) 
+81:  (乌克兰文) 
+82: Hungary 匈牙利(匈牙利文) HU
+83:  (爱尔兰文) 
+84: Guatemala 危地马拉(西班牙文) GT
+85: Paraguay 巴拉圭(西班牙文) PY
+86: Bulgaria 保加利亚(保加利亚文) BG
+87: Croatia 克罗地亚(克罗地亚文) HR
+88: Bosnia and Herzegovina 波斯尼亚和黑山共和国(塞尔维亚文) BA
+89: Romania 罗马尼亚(罗马尼亚文) RO
+90: Luxembourg 卢森堡(法文) LU
+91:  (挪威文) 
+92:  (立陶宛文) 
+93: Singapore 新加坡(英文) SG
+94: Ecuador 厄瓜多尔(西班牙文) EC
+95: Bosnia and Herzegovina 波斯尼亚和黑山共和国(塞尔维亚文) BA
+96: Nicaragua 尼加拉瓜(西班牙文) NI
+97:  (斯洛伐克文) 
+98:  (俄文) 
+99:  (马耳他文) 
+100: El Salvador 萨尔瓦多(西班牙文) SV
+101:  (荷兰文) 
+102: India 印度(印地文) IN
+103:  (爱沙尼亚文) 
+104: Greece 希腊(希腊文) GR
+105: Slovenia 斯洛文尼亚(斯洛文尼亚文) SI
+106: Italy 意大利(意大利文) IT
+107: Japan 日本(日文) JP
+108: Luxembourg 卢森堡(德文) LU
+109: Switzerland 瑞士(法文) CH
+110: Malta 马耳他(马耳他文) MT
+111: Bahrain 巴林(阿拉伯文) BH
+112:  (阿尔巴尼亚文) 
+113:  (越南文) 
+114: Montenegro 黑山(塞尔维亚文) ME
+115: Brazil 巴西(葡萄牙文) BR
+116: Norway 挪威(挪威文) NO
+117:  (希腊文) 
+118: Switzerland 瑞士(德文) CH
+119: Singapore 新加坡(中文) SG
+120: Kuwait 科威特(阿拉伯文) KW
+121: Egypt 埃及(阿拉伯文) EG
+122: Ireland 爱尔兰(爱尔兰文) IE
+123: Peru 秘鲁(西班牙文) PE
+124: Czech Republic 捷克共和国(捷克文) CZ
+125: Turkey 土耳其(土耳其文) TR
+126:  (捷克文) 
+127: Uruguay 乌拉圭(西班牙文) UY
+128: Ireland 爱尔兰(英文) IE
+129: India 印度(英文) IN
+130: Oman 阿曼(阿拉伯文) OM
+131: Serbia and Montenegro 塞尔维亚及黑山(塞尔维亚文) CS
+132:  (加泰罗尼亚文) 
+133:  (白俄罗斯文) 
+134:  (塞尔维亚文) 
+135:  (朝鲜文) 
+136: Albania 阿尔巴尼亚(阿尔巴尼亚文) AL
+137: Portugal 葡萄牙(葡萄牙文) PT
+138: Latvia 拉脱维亚(拉托维亚文(列托)) LV
+139: Serbia 塞尔维亚(塞尔维亚文) RS
+140: Slovakia 斯洛伐克(斯洛伐克文) SK
+141: Mexico 墨西哥(西班牙文) MX
+142: Australia 澳大利亚(英文) AU
+143: Norway 挪威(挪威文) NO
+144: New Zealand 新西兰(英文) NZ
+145: Sweden 瑞典(瑞典文) SE
+146:  (罗马尼亚文) 
+147: Lebanon 黎巴嫩(阿拉伯文) LB
+148: Germany 德国(德文) DE
+149: Thailand 泰国(泰文) TH
+150:  (土耳其文) 
+151: Colombia 哥伦比亚(西班牙文) CO
+152: Philippines 菲律宾(英文) PH
+153: Estonia 爱沙尼亚(爱沙尼亚文) EE
+154: Cyprus 塞浦路斯(希腊文) CY
+155:  (匈牙利文) 
+156: France 法国(法文) FR
