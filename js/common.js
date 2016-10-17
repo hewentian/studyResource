@@ -298,3 +298,22 @@ function getUrlDomain(url) {
 	
 	return url;
 }
+
+/**
+ * 产生随机码
+ */
+function validateNum() {
+	// [0-9a-z]
+	var numCharArray = new Array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z');
+	var validNum = '';
+	for (var i = 0; i < 8; i++) {
+		var index = Math.floor(Math.random() * numCharArray.length);
+		validNum += numCharArray[index];
+	}
+				
+	var validNum2 = prompt('请输入以下验证码: ' + validNum);
+	if (validNum != validNum2) {
+		alert('验证码错误.')
+		return;
+	}
+}

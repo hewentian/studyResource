@@ -1,0 +1,123 @@
+Java的日期格式化常用方法
+
+参考网页：http://www.cnblogs.com/mailingfeng/archive/2011/07/28/2120422.html
+
+一般常用格式化类DateFormat和SimpleDateFormat的format(Date time)方法进行格式化日期.
+
+	1. 首先介绍java.text.SimpleDateFormat类.
+
+public class SimpleDateFormat extends DateFormat
+
+SimpleDateFormat	
+	是一个以与语言环境有关的方式来格式化和解析日期的具体类。它允许进行格式化（日期 -> 文本）、解析（文本 -> 日期）和规范化。
+使得可以选择任何用户定义的日期-时间格式的模式。但是，仍然建议通过 DateFormat 中的 getTimeInstance、getDateInstance 或 
+getDateTimeInstance 来创建日期-时间格式器。每一个这样的类方法都能够返回一个以默认格式模式初始化的日期/时间格式器。可以
+根据需要使用 applyPattern 方法来修改格式模式。
+ 
+
+日期和时间模式
+	日期和时间格式由日期和时间模式 字符串指定。在日期和时间模式字符串中，未加引号的字母 'A' 到 'Z' 和 'a' 到 'z' 被解释为模式字母
+，用来表示日期或时间字符串元素。文本可以使用单引号 (') 引起来，以免进行解释。"''" 表示单引号。所有其他字符均不解释；只是在格式化
+时将它们简单复制到输出字符串，或者在解析时与输入字符串进行匹配。
+
+定义了以下模式字母（所有其他字符 'A' 到 'Z' 和 'a' 到 'z' 都被保留）：
+
+字母		日期或时间元素			表示					示例
+G		Era 标志符				Text				AD
+y		年						Year				1996; 96
+M		年中的月份				Month				July; Jul; 07
+w		年中的周数				Number				27
+W		月份中的周数				Number				2
+D		年中的天数				Number				189
+d		月份中的天数				Number				10
+F		月份中的星期				Number				2
+E		星期中的天数				Text				Tuesday; Tue
+a		Am/pm 标记				Text				PM
+H		一天中的小时数（0-23）	Number				0
+k		一天中的小时数（1-24）	Number				24
+K		am/pm 中的小时数（0-11）	Number				0
+h		am/pm 中的小时数（1-12）	Number				12
+m		小时中的分钟数			Number				30
+s		分钟中的秒数				Number				55
+S		毫秒数					Number				978
+z		时区						General time zone	Pacific Standard Time; PST; GMT-08:00
+Z		时区						RFC 822 time zone	-0800
+
+示例
+以下示例显示了如何在美国语言环境中解释日期和时间模式。给定的日期和时间为美国太平洋时区的本地时间 2001-07-04 12:08:56。
+日期和时间模式						结果
+"yyyy.MM.dd G 'at' HH:mm:ss z"		2001.07.04 AD at 12:08:56 PDT
+"EEE, MMM d, ''yy"					Wed, Jul 4, '01
+"h:mm a"							12:08 PM
+"hh 'o''clock' a, zzzz"				12 o'clock PM, Pacific Daylight Time
+"K:mm a, z"							0:08 PM, PDT
+"yyyyy.MMMMM.dd GGG hh:mm aaa"		02001.July.04 AD 12:08 PM
+"EEE, d MMM yyyy HH:mm:ss Z"		Wed, 4 Jul 2001 12:08:56 -0700
+"yyMMddHHmmssZ"						010704120856-0700
+"yyyy-MM-dd'T'HH:mm:ss.SSSZ"		2001-07-04T12:08:56.235-0700
+
+常用构造方法 :
+
+ SimpleDateFormat sFormat = new SimpleDateFormat(String pattern);
+或者
+SimpleDateFormat sFormat = new SimpleDateFormat();
+
+sFormat.applyPattern(String pattern); 
+
+或者
+
+DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL, Locale.getDefault());
+
+//具体可取DateFormat.SHORT,DEFAULT,LONG,FULL等
+
+ 
+
+ 2. 常用的日期类有Calendar和GregorianCalendar,后者是前者的子类,并拓展了一些功能,例如是否为闰年等方法.两者用法基本类似
+
+note:
+	在 JDK 1.1 之前，类 Date 有两个其他的函数。它允许把日期解释为年、月、日、小时、分钟和秒值。它也允许格式化和解析日期字符串。
+不过，这些函数的 API 不易于实现国际化。从 JDK 1.1 开始，应该使用 Calendar 类实现日期和时间字段之间转换，使用 DateFormat 类来格
+式化和解析日期字符串。Date 中的相应方法已废弃。 
+
+ 常用构造方法:
+
+Calendar c = Calendar.getInstance();
+
+c.setTime(Date date);//或 c.setTime(int year,int month, int day,int hour,int minute , int second);
+
+ 
+
+GregorianCalendar gC = new GregorianCalendar( int year,int month, int day,int hour,int minute , int second ) ;//方法可重载,具体看API
+
+ 
+
+3.示例代码 (这里使用了log4j,只需将代码中的log.info改成相应的System.out.println,置于main()方法中运行即可)
+
+public void testCalendar() {
+        Calendar c1 = Calendar.getInstance();
+        c1.setTime(new Date());
+        
+        //当Calendar中设置的时间超过每项的最大值时,会以减去最大值后的值设置时间,例如月份设置13,最后会变成13-11=02
+        Calendar c2 = Calendar.getInstance();
+        c2.set(1920, 13, 24, 22, 32, 22);
+        //使用pattern
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd H:m:s");
+        SimpleDateFormat format2 = new SimpleDateFormat("yy-MM-dd H:m:s");
+        SimpleDateFormat format3 = new SimpleDateFormat("y-M-d H:m:s");
+        //使用约定格式	
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL, Locale.getDefault());
+        
+        //获取Calendar中各个属性字段的方法
+        log.info("The year now time is " + c1.get(c1.YEAR));
+        log.info("The month now time is " + c1.get(c1.MONTH));
+        log.info("The day_of_month now time is " + c1.get(c1.DAY_OF_MONTH));
+        log.info("The day_of_week now time is " + c1.get(c1.DAY_OF_WEEK));
+        log.info("今天是在这个月的第几个星期: " + c1.get(c1.DAY_OF_WEEK_IN_MONTH));
+        log.info("The day_of_year now time is " + c1.get(c1.DAY_OF_YEAR));
+        //不同模式对应的格式略有不同,有时间可以测试多一点模式
+        log.info("yyyy-MM-dd H:m:s-->" + format.format(c1.getTime()));
+        log.info("yy-MM-dd H:m:s-->" + format2.format(c1.getTime()));
+        log.info("y-M-d H:m:s-->" + format3.format(c1.getTime()));
+ 		log.info("DateFormat.FULL-->" + dateFormat.fomat(c1.getTime()));        
+ 		log.info(format.format(c2.getTime()));
+}
