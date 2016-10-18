@@ -1,0 +1,185 @@
+在CentOS上安装nginx
+
+1.安装第三方库的支持：
+yum -y install zlib zlib-devel openssl openssl-devel pcre pcre-devel
+
+2.下载安装nginx
+我们可以在http://www.nginx.org网站找到。
+wget http://nginx.org/download/nginx-1.7.0.tar.gz
+
+tar xzvf nginx-1.7.0.tar.gz
+
+cd nginx-1.7.0
+
+./configure
+
+make && make install
+
+到这里为止，nginx已经安装完毕。
+
+3.启动nginx
+nginx默认安装到/usr/local/nginx目录下：
+
+启动命令如下：
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+
+修改配置文件后，检查配置文件是否正确的命令如下：
+/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
+
+可以打开http://127.0.0.1来看看是否已启动。
+
+4.配置nginx
+如果我们的WEB项目的位置为/data/uploads，那么我们修改nginx的配置文件 ,监听80端口,把访问资源指向/data/，当访问到http://127.0.0.1/uploads时，指向data/uploads
+
+vi /usr/local/nginx/conf/nginx.conf
+
+添加如下代码即可：
+
+server {
+        listen       80;
+        server_name  localhost;
+
+        location / {
+            root   /data/;              # 只改这个位置即可
+            index  index.html index.htm;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+
+保存文件后，退出。
+检查配置文件是否正确：/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
+
+然后重启nginx
+首先找出nginx进程号：
+ps -ef | grep nginx
+
+然后杀死nginx的主进程：
+kill [nginx进程号]
+
+重启nginx
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+
+通过上面的操作，项目基本可以运行起来了。http://127.0.0.1/uploads
+
+
+
+以下是一些配置示例：
+
+配置示例1：------------------------------------------------------------
+
+在网页上访问：http://120.132.176.162:5566/或http://recapi.mob.com:5566/的时候，就会访问到
+下面这三台机器，负载均衡
+
+#Rec
+upstream mob_worker{
+  server 192.168.10.243:8080 weight=3000;
+  server 192.168.10.244:8080 weight=3000;
+  server 192.168.10.245:8080 weight=3000;
+  keepalive 2000;
+}
+
+# api
+server
+{
+# listen      80;
+  listen      5566;
+  server_name 120.132.176.162  recapi.mob.com;
+
+  location / {
+    proxy_pass http://mob_worker/;
+    proxy_redirect off;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    access_log  /data/logs/nginx/recapi.mob.com.log main;
+  }
+}
+配置示例1：------------------------------------------------------------
+
+
+
+配置示例2：------------------------------------------------------------
+
+完整的示例：
+
+有两个服务：
+一个是一个WEB服务，是指向另一台机器的，其中check是一个接口。
+http://218.19.129.162:5180/inner/check
+
+另一个是用来看某个目录下的图片的：
+http://218.19.129.162:5180/uploads/201409/24/3832/3832279c5f6757e85a4e8802a5d1e916_180.jpg
+
+#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+
+
+upstream inner_worker{
+  server 192.168.9.53:8282 weight=3000;
+  keepalive 2000;
+}
+
+# api2
+server
+{
+  listen      80;
+  listen      5180;
+  server_name localhost;
+  
+  location / {
+      root   html;
+      index  index.html;
+  }
+  location /inner/ {
+    proxy_pass http://inner_worker/;
+    #proxy_redirect off;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    #proxy_http_version 1.1;
+    #proxy_set_header Connection "";
+    #access_log  /data/logs/nginx/rec.inner.log/main;
+  }
+  location /uploads/ {
+     alias /data/uploads/;
+  }
+}
+
+}
+配置示例2：------------------------------------------------------------
