@@ -499,3 +499,7 @@ c. 我的eclipse空间损坏了，我采用第6种方式解决了！
 
 d. 最后我发现以上方法都无法解决我的问题，是因为我的eclipse用了本地安装的JDK8导致，eclipse到目前为止不支持JDK8
 
+JAVA监控程序jconsole的使用，命令行下运行jconsole即可，可本地可远程
+
+
+
