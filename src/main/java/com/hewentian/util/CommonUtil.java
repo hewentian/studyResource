@@ -628,15 +628,27 @@ public class CommonUtil {
 	 * @return int 整型值
 	 */
 	public static int getNearTitleScore(String country, String language, int level) {
-		// 目前没写就是3
-		switch (level) {
-		case 0:
-			return 5;
-		case 1:
-			return 4;
-		default:
-			return 2;
+		if (null == country || null == language) {
+			return 0;
 		}
+
+		country = country.trim();
+		language = language.trim();
+		int score = 1;
+
+		// 首先按语系来分, 再按国家来分
+		// 目前都返回1分，到时按需调整
+		if ("zh".equals(language)) {
+			if ("CN".equals(country) || "TW".equals(country) || "HK".equals(country)) {
+				score = 1;
+			}
+		} else if ("en".equals(language)) {
+			if ("US".equals(country) || "GB".equals(country)) {
+				score = 1;
+			}
+		}
+
+		return score;
 	}
 
 	/**
