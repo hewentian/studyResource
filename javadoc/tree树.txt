@@ -78,3 +78,10 @@ HDEBFGCA
 3. 在后根序序列中确定左右子树的后根序序列；
 4. 由左子树的后根序序列和中根序序列建立左子树；
 5. 由右子树的后根序序列和中根序序列建立右子树。
+
+
+Double-Array Trie
+参阅这个：
+http://blog.csdn.net/zzran/article/details/8462002
+http://www.hankcs.com/program/java/%E5%8F%8C%E6%95%B0%E7%BB%84trie%E6%A0%91doublearraytriejava%E5%AE%9E%E7%8E%B0.html
+http://www.cnblogs.com/zhangchaoyang/articles/4508266.html
