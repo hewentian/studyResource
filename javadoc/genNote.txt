@@ -415,4 +415,15 @@ d. 最后我发现以上方法都无法解决我的问题，是因为我的eclip
 JAVA监控程序jconsole的使用，命令行下运行jconsole即可，可本地可远程
 
 
+有时候我们写的JS脚本在浏览器中运行时，无法访问一些servlet或action，可以将浏览器的如下属性设置为false
+security.mixed_content.block_active_content
+
+在firefox的URL中输入如下：
+about:config
+
+然后在搜索中输入：
+security.mixed_content.block_active_content
+
+这里的设置比较特殊，直接双击就会让它的值改变
+
 
