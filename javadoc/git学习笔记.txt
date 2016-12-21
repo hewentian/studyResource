@@ -1415,3 +1415,6 @@ warning: You appear to have cloned an empty repository.
 要像SVN那样变态地控制权限，用Gitolite。
 
 
+Eclipse中怎么清除Git用户名和密码
+window--》preferences--》General--》Security--》Secure Storage--》Content--》GIT
+在下拉框里面找到Git，可以delete掉记住的用户名和密码。
