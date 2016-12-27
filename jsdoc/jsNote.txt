@@ -1,0 +1,41 @@
+参见：http://www.jb51.net/article/54173.htm
+
+js使用正则实现ReplaceAll全部替换的方法
+
+JS 没有提供replaceAll这样的方法。使用正则表可以达成Replace 的效果，感兴趣的朋友看看下面的示例
+
+JS 字符串有replace() 方法。但这个方法只会对匹配到的第一个字串替换。 如下例：
+
+var str = "wordwordwordword";
+var strNew = str.replace("word","Excel");
+alert(strNew);
+
+如果要全部替换的话，JS 没有提供replaceAll这样的方法。使用正则表可以达成Replace 的效果：
+
+str.replace(/word/g,"Excel")
+
+g 的意义是：执行全局匹配（查找所有匹配而非在找到第一个匹配后停止）。
+
+以上写法有个类同的写法：
+str.replace(new RegExp("word","gm"),"Excel")
+
+
+g 执行全局匹配（查找所有匹配而非在找到第一个匹配后停止）。
+m 执行多行匹配。
+除此之外，也可以添加 Stirng对象的原型方法:
+
+
+String.prototype.replaceAll = function(s1,s2){ 
+return this.replace(new RegExp(s1,"gm"),s2); 
+}
+
+
+这样就可以像使用replace 方法一样使用replaceAll了
+
+str.replaceAll("word","Excel");
+
+总结一下， 三种方式
+1. str.replace(/oldString/g,newString)
+2. str.replace(new RegExp(oldString,"gm"),newString)
+3. 增加String 对象原型方法 replaceAll
+
