@@ -1,0 +1,5 @@
+linux下查看某命令的具体位置使用which，如：
+which ab
+
+
+

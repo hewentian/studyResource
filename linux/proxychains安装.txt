@@ -1,0 +1,85 @@
+利用proxychains在终端使用socks5代理
+
+最近用各种脚本下载东西的时候发现有的站点需要当地IP才能下，比如.....nico, youtube等；所以就找了下能在终端用socks5代理的工具，最后找到了proxychains，从此再无压力=w=
+
+proxychains安装
+
+git clone https://github.com/rofl0r/proxychains-ng.git
+cd proxychains-ng
+./configure
+make && make install
+cp ./src/proxychains.conf /etc/proxychians.conf
+cd .. && rm -rf proxychains-ng
+编辑proxychains配置
+
+vim /etc/proxychains.conf
+将socks4 127.0.0.1 9095改为
+
+socks5  127.0.0.1 1080  //1080改为你自己的端口
+使用方法
+
+在需要代理的命令前加上 proxychains4 ，如：
+
+proxychains4 wget http://xxx.com/xxx.zip
+
+
+
+使用shadowsocks+proxychains同步代码
+
+前言
+自从谷歌被墙后，国内涌现了一批代理软件，但质量参次不齐，在购买并使用了其中几款后，我发现最稳定的几乎不存在，毕竟树大招风，几乎都是隔几天就跪了。在此纪念一下！
+
+goagent
+gae
+vpngate
+shadowsocks
+行云VPN
+...
+自己搭建服务器
+自从免费或收费的很多代理都倒下后，越来越多的人们开始购买国外的VPS自己进行代理服务器的搭建，捎带着作为自己的独立博客空间。
+前段时间我为了测试也随大流，购买了一款。因为我注重性价比，而且也没什么钱，因此观察了一段时间后，选择了搬瓦工的服务器。国外的服务商有几个好处，几乎都可以在一定的时间内不满意全额退货，质量也还好。
+我选择搬瓦工主要还是看中它的便宜。我的服务器512内存，5G空间，每月500G流量，一年只要12美元，而且它支持支付宝付款。历史上还有4美元一年的，但很多低价套餐都没货了。
+购买好之后，安装个centos系统。这些操作都是可以在网页的控制面板中完成的。然后直接可以一键搭建shadowsocks服务器。然后你的所有设备都可以翻墙了。服务器有好几个机房，购买时有的套餐是不可以迁移机房的，有的可以，希望注意一下。不同的机房访问速度不一样。看运气了。理论上价钱高的要好一点。
+
+在ubuntu使用
+安装shadowsocks
+sudo apt-get install python-pip
+sudo pip install shadowsocks
+然后创建配置文件
+sudo gedit /etc/shadowsocks.json
+加入下面的配置内容，并补全配置信息
+{
+    "server":"服务器地址",
+    "server_port":服务器端口号,
+    "local_address": "127.0.0.1",
+    "local_port":1080,
+    "password":"密码",
+    "timeout":300,
+    "method":"加密方式",
+    "fast_open": true,
+    "workers": 1
+}
+启动客户端
+ sudo sslocal -c /etc/shadowsocks.json
+配置proxychain
+默认应该已经安装了，没有的话请先安装。
+sudo vi /etc/proxychains.conf
+
+将socks4 127.0.0.1 9095改为
+socks5  127.0.0.1 1080  //1080改为你自己的端口
+如何使用
+我这里需要同步魔趣的代码。
+proxychains repo sync -j8    #在需要进行代理的程序前加proxychains
+补充内容
+翻墙是我们不鼓励的行为，但面对现实，我们不得不备好梯子。下面我们详细介绍一下proxychains,翻译过来应该叫：代理链。很形象的名称，就是可以配置一系列的代理服务器地址，然后以代理的方式访问互联网。
+
+有多种代理使用方式
+
+动态代理：从指定的代理列表中按顺序选择一个第一个可用的代理来使用，不在线的代理会跳过。
+严格代理：按照指定的代理列表按顺序一个一个代理进行传递，必须保证所有的代理服务器可用。
+随机代理：从指定的代理列表中随机选择一个来作为当前链接的代理。
+支持http、socks4、socks5的代理服务器
+
+
+执行程序的时候直接输入proxychains 程序名即可，比如打开火狐可以用 proxychains firefox。
+还有，启动个别程序的时候可能需要sudo权限。

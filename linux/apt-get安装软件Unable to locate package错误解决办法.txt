@@ -1,0 +1,59 @@
+apt-get安装软件Unable to locate package错误解决办法
+
+最近新装了Ubuntu10.10的系统，完成后想采用apt-get方式安装一些软件，却总是报出这个错误：Unable to locate package
+这个错误一般是因为软件源未更新造成的，于是采用命令：sudo apt-get update 来更新软件源，结果报出好多404错误，好多资源找不到。
+这样看来是软件源有问题，需要换一个啦，于是通过文件系统进入/etc/apt/目录下，可以看到有一个sources.list文件，软件源的路径配置就是存储在这个文件中的（建议修改之前拷贝一份做个备份），鼠标双击该文件，可以打开一个图形化窗口，如图： 
+
+点击Download from 右侧下拉框，选择Other,又出现下图弹框：
+
+首先点击“Select Best 
+Server”，系统开始自动查找最合适的软件源，待系统搜索完成后会自动定位到最合适的一个源上，此时再点击“Choose 
+Server”,会有提示是否更新，点击确定，则开始执行update操作。 
+如果update顺利完成没有报错，那么恭喜你，软件源配置好了，你可以apt-get方式安装软件了。
+
+如果不幸执行到一半报了错，那说明该软件源不适合你，这时你可以手动选择一下China下其他的源试试运气。如果还是不行，那就只能再想其他方法了
+
+可以执行命令：sudo gedit /ect/apt/sources.list，打开该文件，可以看到里面是一些这样的信息： 
+
+这里就是软件源的描述，我们可以在网上找一些可用的软件源直接覆盖掉原来的配置，经过测试我最终选择了阿里云提供的源地址，直接把下面的内容复制到sources.list文件中保存即可。
+
+deb http://mirrors.aliyun.com/ubuntu/ vivid main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ vivid-security main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ vivid-updates main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ vivid-proposed main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ vivid-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ vivid main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ vivid-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ vivid-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ vivid-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ vivid-backports main restricted universe multiverse
+
+不同的网段可能适合不同的源，需要根据自己情况去选择，参考地址：http://wiki.ubuntu.org.cn/源列表
+
+8.保存完sources.list文件后，执行命令：sudo apt-get update 会看到以下输出信息，表明update成功：
+
+
+现在就可以去安装软件啦！ 
+先装一个tree, 
+$ sudo apt-get install tree 
+
+
+安装成功！
+
+
+
+
+
+W: GPG error: http://www.apache.org 30x InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY A278B781FE4B2BDA
+
+GPG错误： 下列签名无法验证
+
+在添加一个PPA时，可能会导致以下错误GPG错误： 下列签名无法验证，这通常发生在终端中运行更新时：
+
+W: GPG error: http://repo.mate-desktop.org saucy InRelease: The following signatures couldn’t be verified because the public key is not available: NO_PUBKEY 68980A0EA10B4DE8
+
+我们所要做的，就是获取系统中的这个公钥，从信息中获取密钥号。在上述信息中，密钥号为68980A0EA10B4DE8。该密钥可通过以下方式使用：
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
+在添加密钥后，再次运行更新就没有问题了。
+
