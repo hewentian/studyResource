@@ -3,3 +3,21 @@ which ab
 
 
 
+在Linux/unix 平台上的sqlplus中，如果输错了字符，要想删除，习惯性的按下backspace键后，发现非但没有删除想要删掉的字符，还多出了两个字符^H。当 然，我们可以同时按下ctrl+backspace键来删除，但对于习惯了用backspace来删除的用户，这样很不爽。这可以通过修改tty终端的设 置来实现backspace删除功能。通过使用stty命令，就可以查看或者修改终端的按键设置。
+　　例如，设置backspace为删除键：
+　　[oracle10g@linux]$ stty erase ^h
+　　如果要改回使用ctrl+backspace为删除键
+　　[oracle10g@linux]$ stty erase ^?
+　　如果需要重启后自动设置终端，可以将上述命令加入到profile中。
+　　可以通过stty -a命令来查看所有的终端设置。下面是在linux下执行的输出：
+　　[oracle10g@linux]$ stty -a
+
+cat /etc/os-release
+ 
+ debian linux 中如何查看软件包是否已经安装和如何安装、卸载软件
+ 
+$ dpkg -l zsh 
+
+No packages found matching zsh. 
+
+上面结果这表明 zsh 没有 安装。

@@ -1,0 +1,31 @@
+   Ubuntu等可以apt-get install tsocks来下载并安装
+
+配置tosck.conf
+
+一般来说，tsocks的配置文件在/etc/tsocks.conf
+
+一般只修改下面的就可以了：
+
+# Otherwise we use the server
+
+server = proxy.xxx.com #your proxy domain or IP address
+
+server_type = 5   #to use socks V5
+
+server_port = 1080 #the port of your porxy
+
+ 
+
+使用tsocks:
+
+tsocks [application [applications arguments]]
+
+tsocks [on|off]
+
+举几个实例吧：
+
+tsocks firefox  #之后再firefox上浏览网页就会默认使用tsocks配置的代理
+
+tsocks git clone git://github.com/avikivity/kvm.git #使用proxy来git，这就是我用的原因
+
+

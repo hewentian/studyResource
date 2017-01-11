@@ -3,6 +3,7 @@
 最近用各种脚本下载东西的时候发现有的站点需要当地IP才能下，比如.....nico, youtube等；所以就找了下能在终端用socks5代理的工具，最后找到了proxychains，从此再无压力=w=
 
 proxychains安装
+(最简单的为： apt-get install proxychains)
 
 git clone https://github.com/rofl0r/proxychains-ng.git
 cd proxychains-ng
