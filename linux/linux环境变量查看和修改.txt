@@ -1,0 +1,41 @@
+llinux环境变量查看和修改
+
+查看全局环境变量：env 
+查看所有环境变量：set
+删除一个变量：unset [变量名] #只针对当前会话
+    
+设置一个变量：name=songjiankang
+        export name #将这个变量提升为全局的，注意只能是当前会话可以访问，要想下次也可以访问必须写到文件里
+        
+环境变量的配置文件：
+        
+    全局：/etc/profile
+    局部：~/.bash_profile
+    
+常见的几个环境变量：
+
+    $USER, $LOGNAME
+    $UID, $SHELL, $HOME, 
+    $PWD, $PATH
+    $PS1:[\u@\h \W]\$
+    $PS2:敲错以后进入的符号
+
+$PATH:决定了shell将到哪些目录中寻找命令或程序，PATH的值是一系列以冒号分割的目录    
+注意：最好不要把 "./" 放到 PATH 中，这样会引起安全问题
+
+查看PATH 值的方式：echo $PATH  或 export 
+
+修改环境变量
+    1、用命令直接修改但只能在当前会话生效
+       export JAVA_HOME=/usr/local/java   #添加新变量名
+       export PATH=$PATH:/usr/local/php/bin #修改已有变量名
+       测试是否成功：echo $JAVA_HOME 或 env命令、
+       
+    2、修改全局配置文件    
+       vim /etc/profile
+       在文档最后，添加:   export PATH=$PATH:/usr/local/php/bin
+       执行 source /etc/profile 否则需要重写登陆
+       
+    3、类似个人环境变量配置文件
+       vim ~/.bash_profile 
+       后面步骤同2
