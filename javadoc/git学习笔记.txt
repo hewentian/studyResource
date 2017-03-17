@@ -1433,3 +1433,12 @@ warning: You appear to have cloned an empty repository.
 Eclipse中怎么清除Git用户名和密码
 window--》preferences--》General--》Security--》Secure Storage--》Content--》GIT
 在下拉框里面找到Git，可以delete掉记住的用户名和密码。
+
+
+让git push命令不再每次都输入密码
+
+在每次使用Git push的时候都需要输入用户和密码，是不是觉得很麻烦，为了提高效率
+我们可以不需要输入密码就直接提交，我们知道Github获取远程库时，有ssh方式和https方式
+
+git@github.com:hewentian/studyResource.git
+https://github.com/hewentian/studyResource.git
