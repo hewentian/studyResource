@@ -84,4 +84,30 @@ public class FileUtil {
 
 		return true;
 	}
+	
+	/**
+	 * 检查父文件路径是否存在，不存在时根据参数是否创建
+	 * 
+	 * @date 2017年3月11日 上午9:08:34
+	 * @param path 文件路径，如: /data/image/abc.jpeg
+	 * @param create 是否创建: true/false
+	 * @return 是否存在
+	 */
+	public static boolean checkParentPath(String path, boolean create) {
+		File file = new File(path);
+		if (file.getParentFile().exists()) {
+			return true;
+		}
+
+		if (create) {
+			try {
+				file.getParentFile().mkdirs();
+				return true;
+			} catch (Exception e) {
+//				log.error(e);
+			}
+		}
+
+		return false;
+	}
 }
