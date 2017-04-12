@@ -1,0 +1,206 @@
+转自：http://www.cnblogs.com/gomysql/p/3615897.html
+
+MySQL中varchar最大长度是多少？
+
+一. varchar存储规则：
+
+4.0版本以下，varchar(20)，指的是20字节，如果存放UTF8汉字时，只能存6个（每个汉字3字节） 
+5.0版本以上，varchar(20)，指的是20字符，无论存放的是数字、字母还是UTF8汉字（每个汉字3字节），都可以存放20个，最大大小是65532字节 
+ 
+二. varchar和char 的区别：
+
+char是一种固定长度的类型，varchar则是一种可变长度的类型，它们的区别是：char(M)类型的数据列里，每个值都占用M个字节，如果某个长度小
+于M，MySQL就会在它的右边用空格字符补足．（在检索操作中那些填补出来的空格字符将被去掉）在varchar(M)类型的数据列里，每个值只占用刚
+好够用的字节再加上一个用来记录其长度的字节（即总长度为L+1字节）． 
+
+在MySQL中用来判断是否需要进行对据列类型转换的规则
+
+1、在一个数据表里，如果每一个数据列的长度都是固定的，那么每一个数据行的长度也将是固定的．
+
+2、只要数据表里有一个数据列的长度的可变的，那么各数据行的长度都是可变的．
+
+3、如果某个数据表里的数据行的长度是可变的，那么，为了节约存储空间，MySQL会把这个数据表里的固定长度类型的数据列转换为相应的可变长
+度类型．例外：长度小于4个字符的char数据列不会被转换为varchar类型
+ 
+ 
+ ps :被问到一个问题：MySQL中varchar最大长度是多少？这不是一个固定的数字。本文简要说明一下限制规则。
+ 
+1、限制规则
+
+字段的限制在字段定义的时候有以下规则：
+
+a) 存储限制
+
+varchar最多能存储65535个字节的数据。varchar的最大长度受限于最大行长度（max row size，65535bytes）。65535并不是一个很精确的上限，
+可以继续缩小这个上限。65535个字节包括所有字段的长度，变长字段的长度标识（每个变长字段额外使用1或者2个字节记录实际数据长度）、
+NULL标识位的累计。
+ 
+NULL标识位，如果varchar字段定义中带有default null允许列空,则需要需要1bit来标识，每8个bits的标识组成一个字段。一张表中存
+在N个varchar字段，那么需要（N+7）/8 （取整）bytes存储所有的NULL标识位。
+
+如果数据表只有一个varchar字段且该字段DEFAULT NULL，那么该varchar字段的最大长度为65532个字节，即65535-2-1=65532 byte。
+mysql> create table t1 ( name varchar(65532) default null)charset=latin1;
+Query OK, 0 rows affected (0.09 sec)
+
+mysql> 
+mysql> create table t2 ( name varchar(65533) default null)charset=latin1;  
+ERROR 1118 (42000): Row size too large. The maximum row size for the used table type, not counting BLOBs, 
+is 65535. You have to change some columns to TEXT or BLOBs
+mysql> 
+
+可以看见当设置长度为65533时，已经超过行最大长度，我们可以计算一下，行最大长度是65535字节。上面t2表name字段使用varchar（65533），
+字符集是latin1，占用1个字节。还有默认为空，那么还有null标识位，( 1 + 7 ) / 8 =1,所以null标识位占用1个字节。现在我们来看看，
+65533 + 1 + 2=65536字节，已经大于行最大长度。这里2字节怎么来的？？？因为varchar类型存储变长字段的字符类型，与char类型不同的是，
+其存储时需要在前缀长度列表加上实际存储的字符，当存储的字符串长度小于255字节时，其需要1字节的空间，当大于255字节时，需要2字节的空间。
+
+如果数据表只有一个varchar字段且该字段NOT NULL，那么该varchar字段的最大长度为65533个字节，即65535-2=65533byte
+mysql> create table t2 ( name varchar(65533) not null) charset=latin1;   
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> 
+mysql> create table t3 ( name varchar(65534) not null) charset=latin1;  
+ERROR 1118 (42000): Row size too large. The maximum row size for the used table type, not counting BLOBs, is 65535. 
+You have to change some columns to TEXT or BLOBs
+mysql> 
+
+b) 编码长度限制
+字符类型若为gbk，每个字符最多占2个字节，最大长度不能超过32766;
+
+字符类型若为utf8，每个字符最多占3个字节，最大长度不能超过21845。
+
+若定义的时候超过上述限制，则varchar字段会被强行转为text类型，并产生warning。
+ 
+c) 行长度限制
+
+导致实际应用中varchar长度限制的是一个行定义的长度。 MySQL要求一个行的定义长度不能超过65535。若定义的表长度超过这个值，则提示
+
+ERROR 1118 (42000): Row size too large. The maximum row size for the used table type, not counting BLOBs, is 65535. 
+You have to change some columns to TEXT or BLOBs。
+ 
+2、计算例子
+
+举两个例说明一下实际长度的计算。
+
+a)  若一个表只有一个varchar类型，如定义为
+
+create table t4(c varchar(N)) charset=gbk;
+
+则此处N的最大值为(65535-1-2)/2= 32766。
+
+减1的原因是实际行存储从第二个字节开始;
+减2的原因是varchar头部的2个字节表示长度;
+
+除2的原因是字符编码是gbk。
+ 
+b) 若一个表定义为
+
+create table t4(c int, c2 char(30), c3 varchar(N)) charset=utf8;
+
+则此处N的最大值为 (65535-1-2-4-30*3)/3=21812
+
+减1和减2与上例相同;
+
+减4的原因是int类型的c占4个字节;
+
+减30*3的原因是char(30)占用90个字节，编码是utf8。
+ 
+如果被varchar超过上述的b规则，被强转成text类型，则每个字段占用定义长度为11字节，当然这已经不是varchar了。
+ 
+则此处N的最大值为 (65535-1-2-4-30*3)/3=21812,例子如下:
+mysql> create table t4(c int, c2 char(30), c3 varchar(21812)) charset=utf8; 
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> 
+mysql> create table t5(c int, c2 char(30), c3 varchar(21813)) charset=utf8;  
+ERROR 1118 (42000): Row size too large. The maximum row size for the used table type, not counting BLOBs, is 65535. 
+You have to change some columns to TEXT or BLOBs
+mysql> 
+ 
+
+最后让我们来看一个例子
+
+复制代码
+CREATE TABLE t6 (
+id int,
+a VARCHAR(100) DEFAULT NULL,
+b VARCHAR(100) DEFAULT NULL,
+c VARCHAR(100) DEFAULT NULL,
+d VARCHAR(100) DEFAULT NULL,
+e VARCHAR(100) DEFAULT NULL,
+f VARCHAR(100) DEFAULT NULL,
+g VARCHAR(100) DEFAULT NULL,
+h VARCHAR(100) DEFAULT NULL,
+i VARCHAR(N) DEFAULT NULL
+) CHARSET=utf8;
+ 
+复制代码
+那么上面这条语句中的varchar(N)的最大值是多少呢？
+
+让我们来计算一下
+
+每个NULL字段用1bit标识，10个字段都是default null，那么需要用(10+7)/8bit = 2 bytes存储NULL标识位。int占用4个 byte。
+
+(65535 - 1 - 2*8  -4 - 100*3*8 -2)/3=21037
+
+mysql> CREATE TABLE t6 ( id int, a VARCHAR(100) DEFAULT NULL, b VARCHAR(100) DEFAULT NULL, c VARCHAR(100) DEFAULT NULL, d 
+VARCHAR(100) DEFAULT NULL, e VARCHAR(100) DEFAULT NULL, f VARCHAR(100) DEFAULT NULL, g VARCHAR(100) DEFAULT NULL, h VARCHAR(100) 
+DEFAULT NULL, i VARCHAR(21037) DEFAULT NULL ) CHARSET=utf8;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
+mysql> CREATE TABLE t7 ( id int, a VARCHAR(100) DEFAULT NULL, b VARCHAR(100) DEFAULT NULL, c VARCHAR(100) DEFAULT NULL, d 
+VARCHAR(100) DEFAULT NULL, e VARCHAR(100) DEFAULT NULL, f VARCHAR(100) DEFAULT NULL, g VARCHAR(100) DEFAULT NULL, h VARCHAR(100) 
+DEFAULT NULL, i VARCHAR(21038) DEFAULT NULL ) CHARSET=utf8;  
+ERROR 1118 (42000): Row size too large. The maximum row size for the used table type, not counting BLOBs, is 65535. 
+You have to change some columns to TEXT or BLOBs
+mysql> 
+ 可以看见多一个字符都报错了。
+
+varchar到底能存多少个字符？这与使用的字符集相关，latin1、gbk、utf8编码存放一个字符分别需要占1、2、3个字节。
+
+ 
+
+3、varchar物理存储
+
+在物理存储上，varchar使用1到2个额外的字节表示实际存储的字符串长度（bytes）。如果列的最大长度小于256个字节，用一个字节表示（标识）。
+如果最大长度大于等于256，使用两个字节。
+
+当选择的字符集为latin1，一个字符占用一个byte
+
+varchar(255)存储一个字符，一共使用2个bytes物理空间存储数据实际数据长度和数据值。
+
+varchar(256)存储一个字符，使用2 bytes表示实际数据长度，一共需要3 bytes物理存储空间。
+
+varchar对于不同的RDBMS引擎，有不通的物理存储方式，虽然有统一的逻辑意义。对于mysql的不同存储引擎，其实现方法与数据的物理存放方式也不同。
+
+4、InnoDB中的varchar
+
+InnoDB中varchar的物理存储方式与InnoDB使用的innodb_file_format有关。早期的innodb_file_forma使用的Antelope文件格式，支持
+redundant和compact两种row_format。从5.5开始或者InnoDB1.1，可以使用一种新的file format，Barracuda。Barracuda兼容Redundant，
+另外还支持dynamic和compressed两种row_format.
+
+当innodb_file_format=Antelope，ROW_FORMAT=REDUNDANT 或者COMPACT。
+
+innodb的聚集索引（cluster index）仅仅存储varchar、text、blob字段的前768个字节，多余的字节存储在一个独立的overflow 
+page中，这个列也被称作off-page。768个字节前缀后面紧跟着20字节指针，指向overflow pages的位置。
+
+另外，在innodb_file_format=Antelope情况下，InnoDB中最多能存储10个大字段（需要使用off-page存储）。innodbd的默认page 
+size为16KB，InnoDB单行的长度不能超过16k/2=8k个字节，（768+20）*10 < 8k。
+
+当innodb_file_format=Barracuda, ROW_FORMAT=DYNAMIC 或者 COMPRESSED
+
+innodb中所有的varchar、text、blob字段数据是否完全off-page存储，根据该字段的长度和整行的总长度而定。对off-page存储的列，
+cluster index中仅仅存储20字节的指针，指向实际的overflow page存储位置。如果单行的长度太大而不能完全适配cluster index 
+page，innodb将会选择最长的列作为off-page存储，直到行的长度能够适配cluster index page。
+
+5、MyISAM中的varchar
+
+对于MyISAM引擎，varchar字段所有数据存储在数据行内（in-line）。myisam表的row_format也影响到varchar的物理存储行为。
+
+MyISAM的row_format可以通过create或者alter sql语句设为fixed和dynamic。另外可以通过myisampack生成row_format=compresse的存储格式。
+
+当myisam表中不存在text或者blob类型的字段，那么可以把row_format设置为fixed(也可以为dynamic)，否则只能为dynamic。
+
+当表中存在varchar字段的时候，row_format可以设定为fixed或者dynamic。使用row_format=fixed存储varchar字段数据，浪费存储空间，
+varchar此时会定长存储。row_format为fixed和dynamic，varchar的物理实现方式也不同（可以查看源代码文件field.h和field.cc），
+因而myisam的row_format在fixed和dynamic之间发生转换的时候，varchar字段的物理存储方式也将会发生变化。

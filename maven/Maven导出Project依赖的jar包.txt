@@ -1,0 +1,18 @@
+http://blog.csdn.net/leoyao2006/article/details/40459653
+
+Maven导出Project依赖的jar包
+
+
+Maven导出Project依赖的jar包
+从Maven仓库中导出jar包：
+mvn dependency:copy-dependencies  
+ 会导出到Project的targed/dependency 下面
+ 
+可以在Project创建lib文件夹，输入以下命令：
+mvn dependency:copy-dependencies -DoutputDirectory=lib  
+ 
+这样jar包都会copy到Project目录下的lib里面
+ 
+可以设置依赖级别，通常用编译需要的jar
+mvn dependency:copy-dependencies -DoutputDirectory=lib   -DincludeScope=compile  
+
