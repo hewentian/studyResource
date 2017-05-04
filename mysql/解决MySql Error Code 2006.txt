@@ -1,0 +1,37 @@
+http://blog.csdn.net/alibert/article/details/51460876
+
+解决MySql Error Code 2006
+
+在用SQLYog进行10w用户数据sql导入的时候,出错,后查看日志找到错误代码为:
+
+MySQL 服务器已离线
+后经过google发现时MySQL设置的问题.
+这个问题是因为MySql的默认max_allowed_packet过小所致，修改大一些即可
+max_allowed_packet = 100M
+
+另外，可以增加一下两个参数，来扩大相应时间
+interactive_timeout=28800000
+wait_timeout=28800000
+
+
+或者
+
+如一些小脚本很少报错，但最近导入一个10+M的SQL脚本，却重复报错：
+
+Error occured at:2014-03-24 11:42:24
+Line no.:85
+Error Code: 2006 - MySQL server has gone away
+
+最终找到原因，原来是MySQL导入大批量数据的时候超出了默认允许最大的数据包所以就提示2006 - MySQL server has gone away
+
+于是找到my.cnf，在[mysqld]加入：
+代码如下	复制代码
+max_allowed_packet=300M
+wait_timeout=200000
+interactive_timeout = 200000
+意思是最大允许数据包300M，等待超时/活动失效时常200000秒，重启MySQL
+代码如下	复制代码
+[root@lizhong 20140323]# /etc/init.d/mysqld restart
+Shutting down MySQL.... SUCCESS!
+Starting MySQL. SUCCESS!
+再重新导入，一切正常！

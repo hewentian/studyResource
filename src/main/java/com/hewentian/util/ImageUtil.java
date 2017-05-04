@@ -7,9 +7,16 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -48,14 +55,39 @@ public class ImageUtil {
 		return wh;
 	}
 
-	public static Integer[] getCmykWidthHeight(String filepath) {
+	/**
+	 * 获取CMYK图片的宽高, 超时时间为 60 秒
+	 * 
+	 * @date 2017年3月20日 上午10:47:54
+	 * @param filepath
+	 * @return
+	 */
+	public static Integer[] getCmykWidthHeight(final String filepath) {
 		Integer[] wh = null;
 
+		Callable<Integer[]> task = new Callable<Integer[]>() {
+			@Override
+			public Integer[] call() throws Exception {
+				return CMYK.getWidthHeight(filepath);
+			}
+		};
+
+		ExecutorService executorService = null;
+
 		try {
-			wh = CMYK.getWidthHeight(filepath);
+			executorService = Executors.newSingleThreadExecutor();
+			Future<Integer[]> future = executorService.submit(task);
+			wh = future.get(60, TimeUnit.SECONDS);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
+		} finally {
+			try {
+				executorService.shutdown();
+			} catch (Exception e2) {
+				log.error(e2);
+			}
 		}
+
 		return wh;
 	}
 	
@@ -68,6 +100,7 @@ public class ImageUtil {
 	 */
 	public static boolean download(String imageUrl, String localPath) {
 		try {
+			imageUrl = encodeUrl(imageUrl);
 			URL url = new URL(imageUrl);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -106,5 +139,36 @@ public class ImageUtil {
 		}
 
 		return false;
+	}
+	
+	/**
+	 * 将URL中的汉字编码成UTF-8格式, 如果出错，则返回原来的url
+	 * 
+	 * @date 2017年5月4日 下午2:45:39
+	 * @param url
+	 * @return
+	 */
+	public static String encodeUrl(String url) {
+		if (StringUtils.isEmpty(url)) {
+			return url;
+		}
+
+		try {
+			StringBuffer sb = new StringBuffer(url.length());
+			char[] c = url.toCharArray();
+			for (int i = 0, len = c.length; i < len; i++) {
+				String s = String.valueOf(c[i]);
+				if ((c[i] >= 0x4e00) && (c[i] <= 0x9fbb)) {
+					s = URLEncoder.encode(s, "UTF-8");
+				}
+
+				sb.append(s);
+			}
+
+			return sb.toString();
+		} catch (Exception e) {
+			log.error(e);
+			return url;
+		}
 	}
 }
