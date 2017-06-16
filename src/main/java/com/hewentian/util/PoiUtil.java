@@ -1,12 +1,24 @@
 package com.hewentian.util;
 
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.ClientAnchor.AnchorType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.Borders;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -41,6 +53,8 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STUnderline;
  *
  */
 public class PoiUtil {
+	private static Logger log = Logger.getLogger(PoiUtil.class);
+	
 	/**
 	 * 创建一个HSSFWorkbook, 目前仅支持简单数据类型
 	 * 
@@ -76,6 +90,148 @@ public class PoiUtil {
 		return wb;
 	}
 	
+	/**
+	 * 创建一个HSSFWorkbook
+	 * 
+	 * @date 2017年6月12日 下午3:54:58
+	 * @param dataList
+	 *            数据集
+	 * @return
+	 */
+	public static HSSFWorkbook createHSSFWorkbookForBrand(List<String[]> dataList) {
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet("商标查询列表");
+
+		// 标题行的样式
+		HSSFFont font = wb.createFont();
+		font.setFontHeightInPoints((short) 25);
+		font.setBold(true);
+
+		HSSFCellStyle style = wb.createCellStyle();
+		style.setAlignment(HorizontalAlignment.CENTER);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		style.setFont(font);
+
+		HSSFRow row = sheet.createRow(0);
+		row.setHeight((short) 800);
+		HSSFCell cell = row.createCell(0);
+		cell.setCellStyle(style);
+		cell.setCellValue("商标查询结果列表");
+
+		CellRangeAddress region = new CellRangeAddress(0, 0, 0, 10);
+		sheet.addMergedRegion(region);
+
+		// 产生一空行
+		row = sheet.createRow(1);
+		row.setHeight((short) 450);
+
+		font = wb.createFont();
+		font.setFontHeightInPoints((short) 14);
+		font.setBold(true);
+
+		style = wb.createCellStyle();
+		style.setAlignment(HorizontalAlignment.CENTER);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		style.setFont(font);
+
+		// 生成标题行
+		String[] values = "类别,注册号,商标,图标,申请日期,初审日期".split(",");
+		row = sheet.createRow(2);
+		row.setHeight((short) 450);
+
+		for (int i = 0, len = values.length; i < len; i++) {
+			sheet.setColumnWidth(i, 3000);
+
+			cell = row.createCell(i);
+			cell.setCellValue(values[i]);
+			cell.setCellStyle(style);
+		}
+
+		// 某些行，长度要设长些
+		sheet.setColumnWidth(3, 6000);
+
+		if (null == dataList || dataList.isEmpty()) {
+			return wb;
+		}
+
+		HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+
+		style = wb.createCellStyle();
+		style.setWrapText(true);
+		style.setAlignment(HorizontalAlignment.CENTER);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+
+		// 生成数据行
+		for (int i = 0, len = dataList.size(), rowId = 3; i < len; i++, rowId = i + 3) {
+			row = sheet.createRow(rowId);
+			row.setHeight((short) 2000);
+			String[] data = dataList.get(i);
+
+			cell = row.createCell(0);
+			cell.setCellValue(data[0]);
+			cell.setCellStyle(style);
+
+			cell = row.createCell(1);
+			cell.setCellValue(data[1]);
+			cell.setCellStyle(style);
+
+			cell = row.createCell(2);
+			cell.setCellValue(data[2]);
+			cell.setCellStyle(style);
+
+			cell = row.createCell(3);
+			HSSFClientAnchor anchor = new HSSFClientAnchor(20, 20, 0, 0, (short) 3, rowId, (short) 4, rowId + 1);
+			anchor.setAnchorType(AnchorType.MOVE_DONT_RESIZE);
+
+			try {
+				byte[] pictureData = IOUtils.toByteArray(new URL(data[3]));
+				patriarch.createPicture(anchor, wb.addPicture(pictureData, HSSFWorkbook.PICTURE_TYPE_JPEG));
+			} catch (IOException e) {
+				log.error(e);
+			}
+
+			cell = row.createCell(4);
+			cell.setCellValue(data[4]);
+			cell.setCellStyle(style);
+
+			cell = row.createCell(5);
+			cell.setCellValue(data[5]);
+			cell.setCellStyle(style);
+		}
+
+		return wb;
+	}
+
+	/**
+	 * 创建一个HSSFWorkbook
+	 * 
+	 * @date 2017年6月14日 上午10:23:05
+	 * @param dataList
+	 *            数据集
+	 * @return
+	 */
+	public static byte[] createHSSFWorkbookBytesForBrand(List<String[]> dataList) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		try {
+			HSSFWorkbook excel = createHSSFWorkbookForBrand(dataList);
+			excel.write(baos);
+
+			byte[] bytes = baos.toByteArray();
+			return bytes;
+		} catch (Exception e) {
+			log.error(e);
+		} finally {
+			try {
+				baos.close();
+			} catch (Exception e2) {
+				log.error(e2);
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * 将简报导出到WORD
 	 * @author <a href="mailto:wentian.he@qq.com">hewentian</a>

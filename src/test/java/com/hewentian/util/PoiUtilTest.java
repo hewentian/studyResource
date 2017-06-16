@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,26 +21,45 @@ public class PoiUtilTest {
 	private static Logger log = Logger.getLogger(PoiUtilTest.class);
 
 	public static void main(String[] args) throws Exception {
-		List<String[]> data = new ArrayList<String[]>();
-		data.add(new String[] { "原文标题", "中文标题", "中文摘要", "来源", "链接", "时间" });
-		data.add(new String[] { "Nightline’ Is No.1 in Total Viewers for the 6th Straight Week for Week of June 27", "中华人民共和国万岁 ", "AFDFDFAFD", "abcnews.go.com",
-				"http://abcnews.go.com/Press_Release/center-styletext-aligncenternightline-no1-total-viewers-6th-straight/story?id=40437259", "2016-10-10" });
+		List<String[]> dataList = new ArrayList<String[]>();
+		for (int i = 0; i < 5; i++) {
+			String[] data = new String[6];
 
-		for (int i = 0; i < 10; i++) {
-			data.add(data.get(1));
+			// 类别,注册号,商标,图标,申请日期,初审日期
+			data[0] = "7";
+			data[1] = "10394436";
+			data[2] = "小米";
+			data[3] = "http://img5.wtoip.com/07/35063012546AA3CDDBD1C7D30ED5D5D7.jpg";
+			data[4] = "2012-01-05";
+			data[5] = "2012-01-05";
+
+			dataList.add(data);
 		}
 
+		FileOutputStream fos = new FileOutputStream("F:/excelTest" + System.currentTimeMillis() + ".xls");
+		HSSFWorkbook ex = PoiUtil.createHSSFWorkbookForBrand(dataList);
+		ex.write(fos);
 		
-		XWPFDocument doc = PoiUtil.exportWord(data);
-		
-		FileOutputStream out = new FileOutputStream("d://word_" + System.currentTimeMillis() + ".docx");
-		doc.write(out);
-		out.close();
-		
-		HSSFWorkbook excel = PoiUtil.createHSSFWorkbook("sheet1", data);
-		out = new FileOutputStream("d://excel_" + System.currentTimeMillis() + ".xlsx");
-		excel.write(out);
-		out.close();
+//		List<String[]> data = new ArrayList<String[]>();
+//		data.add(new String[] { "原文标题", "中文标题", "中文摘要", "来源", "链接", "时间" });
+//		data.add(new String[] { "Nightline’ Is No.1 in Total Viewers for the 6th Straight Week for Week of June 27", "中华人民共和国万岁 ", "AFDFDFAFD", "abcnews.go.com",
+//				"http://abcnews.go.com/Press_Release/center-styletext-aligncenternightline-no1-total-viewers-6th-straight/story?id=40437259", "2016-10-10" });
+//
+//		for (int i = 0; i < 10; i++) {
+//			data.add(data.get(1));
+//		}
+//
+//		
+//		XWPFDocument doc = PoiUtil.exportWord(data);
+//		
+//		FileOutputStream out = new FileOutputStream("d://word_" + System.currentTimeMillis() + ".docx");
+//		doc.write(out);
+//		out.close();
+//		
+//		HSSFWorkbook excel = PoiUtil.createHSSFWorkbook("sheet1", data);
+//		out = new FileOutputStream("d://excel_" + System.currentTimeMillis() + ".xlsx");
+//		excel.write(out);
+//		out.close();
 	}
 
 	
