@@ -97,13 +97,15 @@ class Lambda4 {
 }
 
 // old method
-@Hints({@Hint("hint1"), @Hint("hint2")})
-class Person1 {}
+@Hints({ @Hint("hint1"), @Hint("hint2") })
+class Person1 {
+}
 
 // new method
 @Hint("hint1")
 @Hint("hint2")
-class Person2{}
+class Person2 {
+}
 
 /**
  * 
@@ -117,17 +119,6 @@ class Person2{}
  *
  */
 public class Jdk8NewFeature {
-
-	/**
-	 * @author <a href="mailto:wentian.he@qq.com">hewentian</a>
-	 * @date 2017年6月19日 下午3:13:33
-	 * @param args
-	 */
-	/**
-	 * @author <a href="mailto:wentian.he@qq.com">hewentian</a>
-	 * @date 2017年6月19日 下午3:22:38
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		System.out.println("1.接口的默认方法，可以定义多于一个默认方法");
 		Formula formula = new Formula() {
@@ -323,20 +314,20 @@ public class Jdk8NewFeature {
 		reduced.ifPresent(System.out::println); // aaa1#aaa2#bbb1#bbb2#bbb3#ccc#ddd1#ddd2
 
 		System.out.println("########## 并行Streams");
-		// int max = 1000000;
-		// List<String> values = new ArrayList<>(max);
-		// for (int i = 0; i < max; i++) {
-		// UUID uuid = UUID.randomUUID();
-		// values.add(uuid.toString());
-		// }
-		//
-		// long t0 = System.nanoTime();
-		// // long count = values.stream().sorted().count(); // 串行：692
-		// long count = values.parallelStream().sorted().count(); // 并行：355
-		// System.out.println(count);
-		// long t1 = System.nanoTime();
-		// long millis = TimeUnit.NANOSECONDS.toMillis(t1 - t0);
-		// System.out.println(String.format("sort took: %d ms", millis));
+		int max = 1000000;
+		List<String> values = new ArrayList<>(max);
+		for (int i = 0; i < max; i++) {
+			UUID uuid = UUID.randomUUID();
+			values.add(uuid.toString());
+		}
+
+		long t0 = System.nanoTime();
+		// long count = values.stream().sorted().count(); // 串行：692
+		long count = values.parallelStream().sorted().count(); // 并行：355
+		System.out.println(count);
+		long t1 = System.nanoTime();
+		long millis = TimeUnit.NANOSECONDS.toMillis(t1 - t0);
+		System.out.println(String.format("sort took: %d ms", millis));
 
 		System.out.println("\n########################################");
 		System.out.println("Map 新功能");
@@ -386,8 +377,8 @@ public class Jdk8NewFeature {
 		System.out.println("\n########################################");
 		System.out.println("9.Date API");
 		Clock clock = Clock.systemDefaultZone();
-		long millis = clock.millis();
-		System.out.println(millis);
+		long millis2 = clock.millis();
+		System.out.println(millis2);
 
 		Instant instant = clock.instant();
 		Date legacyDate = Date.from(instant);
@@ -452,16 +443,33 @@ public class Jdk8NewFeature {
 		LocalDateTime localDateTime = LocalDateTime.parse("Nov 03, 2014 - 07:13", formatter);
 		String string = formatter.format(localDateTime);
 		System.out.println(string); // Nov 03, 2014 - 07:13
-		
+
 		System.out.println("\n########################################");
 		System.out.println("10.Annotation");
-		Hint hint = Person1.class.getAnnotation(Hint.class);
-		System.out.println(hint); // null
-		
+		Hint hint1 = Person1.class.getAnnotation(Hint.class);
+		System.out.println(hint1); // null
+
 		Hints hints1 = Person1.class.getAnnotation(Hints.class);
-		System.out.println(hints1); // 2
-		
-//		Hint[] hints2 = Person2.class.getAnnotationsByType(Hint.class);
-//		System.out.println(hints2.length);
+		System.out.println(hints1); // null
+
+		Hint[] hints12 = Person1.class.getAnnotationsByType(Hint.class);
+		System.out.println(hints12.length); // 0
+
+		Hints[] hints13 = Person1.class.getAnnotationsByType(Hints.class);
+		System.out.println(hints13.length); // 0
+
+		Hint hint2 = Person2.class.getAnnotation(Hint.class);
+		System.out.println(hint2); // null
+
+		Hints hints2 = Person2.class.getAnnotation(Hints.class);
+		System.out.println(hints2); // null
+
+		Hint[] hints22 = Person2.class.getAnnotationsByType(Hint.class);
+		System.out.println(hints22.length); // 0
+
+		Hints[] hints23 = Person2.class.getAnnotationsByType(Hints.class);
+		System.out.println(hints23.length); // 0
+
+		// 等续...
 	}
 }
