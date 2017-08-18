@@ -1,0 +1,94 @@
+http://www.cnblogs.com/fanyunpeng/p/6255538.html
+
+mysql日志文件在哪
+
+可通过以下语句查看日志存放路径：
+
+show variables like 'general_log_file';
+
+即可找到日志文件的存放路径
+
+当我们不停的对 MYSQL 进行读写的时候，就会产生日志，甚至可能会将整个磁盘吃掉。
+
+
+
+mysql：ibdata1和mysql-bin log管理
+
+MySql ibdata1文件太大如何缩小
+ 
+MySql innodb如果是共享表空间，ibdata1文件越来越大，达到了30多个G，对一些没用的表进行清空：
+truncate table xxx;
+然后optimize table xxx; 没有效果
+因为对共享表空间不起作用。
+
+mysql ibdata1存放数据，索引等，是MYSQL的最主要的数据。
+如果不把数据分开存放的话，这个文件的大小很容易就上了G，甚至几十G。对于某些应用来说，并不是太合适。因此要把此文件缩小。
+无法自动收缩，必须数据导出，删除ibdata1，然后数据导入，比较麻烦，因此需要改为每个表单独的文件。
+
+解决方法：数据文件单独存放(共享表空间如何改为每个表独立的表空间文件)。
+步骤如下：
+ 
+1）备份数据库
+备份全部数据库，执行命令
+#mysqldump -q -uroot -ppassword --add-drop-table --all-databases >/home/backup/all.sql
+
+做完此步后，停止数据库服务。
+#service mysqld stop
+ 
+2）找到my.ini或my.cnf文件
+linux下执行 
+# /usr/libexec/mysqld --verbose --help | grep -A 1 'Default options'
+Default options are read from the following files in the given order:
+/etc/mysql/my.cnf /etc/my.cnf ~/.my.cnf 
+
+windows环境下可以：
+mysqld --verbose --help > mysqlhelp.txt
+notepad mysqlhelp.txt
+
+在里面查找Default options，可以看到查找my.ini的顺序，以找到真实目录
+ 
+3）修改mysql配置文件
+打开my.ini或my.cnf文件
+[mysqld]下增加下面配置
+innodb_file_per_table=1
+验证配置是否生效，可以重启mysql后,执行
+#service mysqld restart
+#mysql -uroot -ppassword
+mysql> show variables like '%per_table%';
++-----------------------+-------+
+| Variable_name         | Value |
++-----------------------+-------+
+| innodb_file_per_table | ON    |
++-----------------------+-------+
+1 row in set (0.00 sec)
+
+
+mysql> 
+
+看看innodb_file_per_table变量是否为ON
+ 
+4）删除原数据文件
+删除原来的ibdata1文件及日志文件ib_logfile*，删除/var/lib/mysql目录下的应用数据库文件夹(mysql文件夹不要删)
+ 
+5）还原数据库
+启动数据库服务，从命令行进入MySQL Server，还原全部数据库，执行命令
+#service mysqld start
+#mysql -uroot -pocs < /home/backup/all.sql 
+
+
+经过以上几步后，可以看到新的ibdata1文件就只有几十M了，数据及索引都变成了针对单个表的小ibd文件了，它们在相应数据库的文件夹下面。
+
+ 
+
+Mysql Data目录生成大量mysql-bin.****
+
+这些文件是叫做MySQL Binary Log，主要有下面两个作用：
+
+数据恢复。
+在主从服务器上提高复制的可靠性。这个其实是主要的作用，但是我根本没有主从服务器，我只有一个，所以用不着，对不？
+找到my.cnf或者my.ini
+#log-bin=mysql-bin
+#binlog_format=mixed
+这两行注释掉，然后将这些文件全部删除。
+
+重新启动Mysql服务器。

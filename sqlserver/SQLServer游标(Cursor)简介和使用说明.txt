@@ -1,0 +1,171 @@
+http://www.cnblogs.com/94cool/archive/2010/04/20/1715951.html
+
+SQLServer游标(Cursor)简介和使用说明
+游标（Cursor）是处理数据的一种方法，为了查看或者处理结果集中的数据，游标提供了在结果集中一次以行或者多行前进或向后浏览数据的能力。我们可以把游标当作一个指针，它可以指定结果中的任何位置，然后允许用户对指定位置的数据进行处理。
+      1.游标的组成
+
+      游标包含两个部分：一个是游标结果集、一个是游标位置。
+
+      游标结果集：定义该游标得SELECT语句返回的行的集合。游标位置：指向这个结果集某一行的当前指针。
+
+ 
+
+      2.游标的分类
+
+      游标共有3类：API服务器游标、Transaction-SQL游标和API客户端游标。
+
+      其中前两种游标都是运行在服务器上的，所以又叫做服务器游标。
+
+      API服务器游标
+
+      API服务器游标主要应用在服务上，当客户端的应用程序调用API游标函数时，服务器会对API函数进行处理。使用API函数和方法可以实现如下功能：
+
+      （１）打开一个连接。
+
+      （２）设置定义游标特征的特性或属性，API自动将游标影射到每个结果集。
+
+      （３）执行一个或多个Transaction-SQL语句。
+
+      （４）使用API函数或方法提取结果集中的行。
+
+      API服务器游标包含以下四种：静态游标、动态游标、只进游标、键集驱动游标（Primary key）
+
+      静态游标的完整结果集将打开游标时建立的结果集存储在临时表中，（静态游标始终是只读的）。静态游标具有以下特点：总是按照打开游标时的原样显示结果集；不反映数据库中作的任何修改，也不反映对结果集行的列值所作的更改；不显示打开游标后在数据库中新插入的行；组成结果集的行被其他用户更新，新的数据值不会显示在静态游标中；但是静态游标会显示打开游标以后从数据库中删除的行。
+
+      动态游标与静态游标相反，当滚动游标时动态游标反映结果集中的所有更改。结果集中的行数据值、顺序和成员每次提取时都会改变。
+
+      只进游标不支持滚动，它只支持游标从头到尾顺序提取数据行。注意：只进游标也反映对结果集所做的所有更改。
+
+      键集驱动游标同时具有静态游标和动态游标的特点。当打开游标时，该游标中的成员以及行的顺序是固定的，键集在游标打开时也会存储到临时工作表中，对非键集列的数据值的更改在用户游标滚动的时候可以看见，在游标打开以后对数据库中插入的行是不可见的，除非关闭重新打开游标。
+
+ 
+
+      Transaction-SQL游标
+
+      该游标是基于Declare Cursor 语法，主要用于Transaction-SQL脚本、存储过程以及触发器中。Transaction-SQL游标在服务器处理由客户端发送到服务器的Transaction-SQL语句。
+
+      在存储过程或触发器中使用Transaction-SQL游标的过程为：
+
+      （１）声明Transaction-SQL变量包含游标返回的数据。为每个结果集列声明一个变量。声明足够大的变量来保存列返回的值，并声明变量的类型为可从数据类型隐式转换得到的数据类型。
+
+      （２）使用Declare Cursor语句将Transaction-SQL游标与Select语句相关联。还可以利用Declare Cursor定义游标的只读、只进等特性。　
+
+      （３）使用Open语句执行Select语句填充游标。
+
+      （４）使用Fetch Into语句提取单个行，并将每列中得数据移至指定的变量中。注意：其他Transaction-SQL语句可以引用那些变量来访问提取的数据值。Transaction-SQL游标不支持提取行块。
+
+      （５）使用Close语句结束游标的使用。注意：关闭游标以后，该游标还是存在，可以使用Open命令打开继续使用，只有调用Deallocate语句才会完全释放。
+
+      客户端游标
+
+      该游标将使用默认结果集把整个结果集高速缓存在客户端上，所有的游标操作都在客户端的高速缓存中进行。注意：客户端游标只支持只进和静态游标。不支持其他游标。
+
+ 
+
+      3.游标的生命周期
+
+      游标的生命周期包含有五个阶段：声明游标、打开游标、读取游标数据、关闭游标、释放游标。
+
+      声明游标是为游标指定获取数据时所使用的Select语句，声明游标并不会检索任何数据，它只是为游标指明了相应的Select 语句。
+
+      Declare 游标名称 Cursor 参数
+
+      声明游标的参数
+
+            （１）Local与Global:Local表示游标的作用于仅仅限于其所在的存储过程、触发器以及批处理中、执行完毕以后游标自动释放。Global表示的是该游标作用域是整个会话层。由连接执行的任何存储过程、批处理等都可以引用该游标名称，仅在断开连接时隐性释放。
+
+            （２）Forward_only与Scroll:前者表示为只进游标，后者表示为可以随意定位。默认为前者。
+
+            （３）Static、Keyset与Dynamic: 第一个表示定义一个游标，其数据存放到一个临时表内，对游标的所有请求都从临时表中应答，因此，对该游标进行提取操作时返回的数据不反映对基表所作的修改，并且该游标不允许修改。Keyset表示的是，当游标打开时，键集驱动游标中行的身份与顺序是固定的，并把其放到临时表中。Dynamic表示的是滚动游标时，动态游标反映对结果集内所有数据的更改。
+
+            （４）Read_only 、Scroll_Locks与Optimistic：第一个表示的是只读游标，第二个表示的是在使用的游标结果集数据上放置锁，当行读取到游标中然后对它们进行修改时，数据库将锁定这些行，以保证数据的一致性。Optimistic的含义是游标将数据读取以后，如果这些数据被更新了，则通过游标定位进行的更新与删除操作将不会成功。
+
+      标准游标：
+
+            Declare MyCursor Cursor 
+                   For Select * From Master_Goods
+
+      只读游标
+
+            Declare MyCusror Cursor
+
+                  For Select * From Master_Goods
+
+                  For Read Only
+
+      可更新游标
+
+            Declare MyCusror Cursor
+
+                  For Select * From Master_Goods
+
+                  For UpDate
+
+      打开游标使用Open语句用于打开Transaction-SQL服务器游标，执行Open语句的过程中就是按照Select语句进行填充数据，打开游标以后游标位置在第一行。
+
+      打开游标
+
+            全局游标：Open Global MyCursor            局部游标: Open MyCursor
+
+      读取游标数据：在打开游标以后，使用Fetch语句从Transaction-SQL服务器游标中检索特定的一行。使用Fetch操作，可以使游标移动到下一个记录，并将游标返回的每个列得数据分别赋值给声明的本地变量。
+
+            Fetch [Next | Prior | First | Last | Absolute　n　| Relative　n　]  From MyCursor
+
+            Into @GoodsID,@GoodsName
+
+            其中:Next表示返回结果集中当前行的下一行记录，如果第一次读取则返回第一行。默认的读取选项为Next
+
+                   Prior表示返回结果集中当前行的前一行记录，如果第一次读取则没有行返回，并且把游标置于第一行之前。
+
+                   First表示返回结果集中的第一行，并且将其作为当前行。
+
+                   Last表示返回结果集中的最后一行，并且将其作为当前行。
+
+                   Absolute　n　如果n为正数，则返回从游标头开始的第n行，并且返回行变成新的当前行。如果n为负，则返回从游标末尾开始的第n行，并且返回行为新的当前行，如果n为0，则返回当前行。
+
+                   Relative　n　如果n为正数，则返回从当前行开始的第n行，如果n为负,则返回从当前行之前的第n行，如果为0，则返回当前行。
+
+      关闭游标调用的是Close语句，方式如下：Close Global MyCursor               Close MyCursor
+
+      释放游标调用的是Deallocate语句，方法如下：Deallocate Glboal MyCursor       Deallocate MyCursor
+
+ 
+
+      游标实例:
+
+            Declare MyCusror Cursor Scroll
+
+                  For Select * From Master_Goods Order By GoodsID
+
+            Open MyCursor
+
+            Fetch next From MyCursor
+            Into @GoodsCode,@GoodsName
+
+            While(@@Fetch_Status = 0)
+                  Begin
+
+                         Begin
+                               Select @GoodsCode = Convert(Char(20),@GoodsCode)
+                               Select @GoodsName = Convert(Char(20),@GoodsName)
+                               PRINT @GoodsCode + ':' + @GoodsName
+                         End
+
+                         Fetch next From MyCursor
+                         Into @GoodsCode,@GoodsName
+
+                  End
+            Close MyCursor
+            Deallocate MyCursor
+
+ 
+
+      修改当前游标的数据方法如下:
+
+            UpDate Master_Goods Set GoodsName = 'yangyang8848' Where Current Of MyCursor;
+      删除当前游标行数据的方法如下: 
+            Delete From Master_Goods Where Current Of MyCursor
+
+ 
+
+      Select @@CURSOR_ROWS 可以得到当前游标中存在的数据行数。注意：此变量为一个连接上的全局变量，因此只对应最后一次打开的游标。

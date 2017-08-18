@@ -1,0 +1,36 @@
+http://www.xuebuyuan.com/1623991.html
+
+sqlserver 中sysobjects type属性
+
+type 类型枚举值如下：
+
+AF  =   聚合函数   (CLR) 
+C   =   CHECK   约束 
+D   =   DEFAULT（约束或独立） 
+F   =   FOREIGN   KEY   约束 
+PK = PRIMARY KEY 约束 
+P   =   SQL   存储过程 
+PC   =   程序集   (CLR)   存储过程 
+FN   =   SQL   标量函数 
+FS   =   程序集   (CLR)   标量函数 
+FT   =   程序集   (CLR)   表值函数 
+R   =   规则（旧式，独立） 
+RF   =   复制筛选过程 
+SN   =   同义词 
+SQ   =   服务队列 
+TA   =   程序集   (CLR)   DML   触发器 
+TR   =   SQL   DML   触发器 
+IF   =   SQL   内联表值函数 
+TF   =   SQL   表值函数 
+U   =   表（用户定义类型） 
+UQ   =   UNIQUE   约束 
+V   =   视图 
+X   =   扩展存储过程 
+IT   =   内部表
+
+-- 从用户表“表名”获得用户表“ID”
+select id,name,xtype from sysobjects where name='T_SQLS' and xtype='U';
+-- 从sysobjects表“ID”获取用户表所有的列
+select name,xtype,colorder,length,isnullable,cdefault from syscolumns where id=2133582639
+-- 从syscolumns表“xtype”获得用户表字段类型名称
+select name from systypes where xusertype=167
