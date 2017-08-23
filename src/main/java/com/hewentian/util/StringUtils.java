@@ -14,29 +14,6 @@ package com.hewentian.util;
  */
 public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	/**
-	 * 将字符串的每个字符转为 16 进制表示
-	 * 
-	 * @author <a href="mailto:wentian.he@qq.com">hewentian</a>
-	 * @date 2017年7月3日 下午5:41:07
-	 * @param str
-	 *            字符串，not empty
-	 * @return str的 16 进制表示
-	 */
-	public static String toHexString(String str) {
-		if (isEmpty(str)) {
-			return null;
-		}
-
-		StringBuilder hexStr = new StringBuilder();
-		char[] charArray = str.toCharArray();
-		for (char c : charArray) {
-			hexStr.append(Integer.toHexString(c));
-		}
-
-		return hexStr.toString();
-	}
-
-	/**
 	 * 判断一个字符是否是中文字符
 	 * 
 	 * @date 2017年8月3日 下午3:59:35
@@ -100,5 +77,58 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 		}
 
 		return false;
+	}
+
+	/**
+	 * 将字节数组转换成16进制的字符串
+	 * 
+	 * @date 2017年8月23日 下午3:39:57
+	 * @param b
+	 * @return
+	 */
+	public static String byte2hex(byte[] b) {
+		StringBuilder sb = new StringBuilder();
+		String stmp = "";
+
+		for (int i = 0; i < b.length; i++) {
+			stmp = (Integer.toHexString(b[i] & 0xFF));
+			if (stmp.length() == 1) {
+				sb.append("0");
+			}
+
+			sb.append(stmp);
+		}
+
+		return sb.toString().toLowerCase();
+	}
+
+	/**
+	 * 将16进制的字符串转换成字节数组
+	 * 
+	 * @date 2017年8月23日 下午3:40:25
+	 * @param hexString
+	 * @return
+	 */
+	public static byte[] hex2byte(String hexString) {
+		if (hexString == null || hexString.equals("")) {
+			return null;
+		}
+
+		hexString = hexString.toUpperCase();
+		int length = hexString.length() / 2;
+		char[] hexChars = hexString.toCharArray();
+		byte[] d = new byte[length];
+
+		for (int i = 0; i < length; i++) {
+			int pos = i * 2;
+			d[i] = (byte) (toByte(hexChars[pos]) << 4 | toByte(hexChars[pos + 1]));
+		}
+
+		return d;
+	}
+
+	public static byte toByte(char c) {
+		byte b = (byte) "0123456789ABCDEF".indexOf(c);
+		return b;
 	}
 }
