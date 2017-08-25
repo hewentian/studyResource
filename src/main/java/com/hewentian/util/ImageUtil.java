@@ -1,5 +1,7 @@
 package com.hewentian.util;
 
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +20,11 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
 
 /**
  * 
@@ -170,5 +177,74 @@ public class ImageUtil {
 			log.error(e);
 			return url;
 		}
+	}
+
+	/**
+	 * 将图片旋转，旋转后，会丢失图片 EXIF 信息
+	 * 注意：不是所有的图片都能成功转
+	 * @date 2017年8月25日 上午10:44:26
+	 * @param srcPath 源图片位置
+	 * @param destPath 旋转后的图片的保存位置
+	 * @param degree 旋转度数，仅支持 90, 180, 270, 360
+	 */
+	public static void rotate(String srcPath, String destPath, int degree) throws Exception {
+		File srcFile = new File(srcPath);
+		BufferedImage srcImg = (BufferedImage) ImageIO.read(srcFile);
+		int w = srcImg.getWidth();
+		int h = srcImg.getHeight();
+
+		BufferedImage destImg = null;
+		if (degree == 90 || degree == 270) {
+			destImg = new BufferedImage(h, w, BufferedImage.TYPE_INT_BGR);
+		} else {
+			destImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_BGR);
+		}
+
+		Graphics2D g2d = destImg.createGraphics();
+
+		AffineTransform srcXform = g2d.getTransform();
+		AffineTransform destXform = (AffineTransform) (srcXform.clone());
+
+		// center of rotation is center of the panel
+		double xRot = w / 2.0;
+		destXform.rotate(Math.toRadians(degree), xRot, xRot);
+
+		g2d.setTransform(destXform);
+		// draw image centered in panel
+		g2d.drawImage(srcImg, 0, 0, null);
+		// Reset to Original
+		g2d.setTransform(srcXform);
+
+		// 写到新的文件
+		FileOutputStream out = new FileOutputStream(destPath);
+		try {
+			ImageIO.write(destImg, "JPG", out);
+		} finally {
+			out.close();
+		}
+	}
+
+	/**
+	 * 读取图片的 EXIF 信息
+	 * @date 2017年8月25日 上午10:58:05
+	 * @param file
+	 * @throws Exception
+	 */
+	public static void readExif(File file) throws Exception {
+		Metadata metadata = ImageMetadataReader.readMetadata(file);
+//		 Directory directory =
+//		 metadata.getFirstDirectoryOfType(ExifDirectoryBase.class
+//		 );
+
+		for (Directory directory : metadata.getDirectories()) {
+			for (Tag tag : directory.getTags()) {
+				System.out.format("[%s] - %s = %s \n", directory.getName(), tag.getTagName(), tag.getDescription());
+			}
+		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+//		rotate("f://a1.jpg", "f://a3.jpg", 360);
+		readExif(new File("f:/ff2.jpg"));
 	}
 }
