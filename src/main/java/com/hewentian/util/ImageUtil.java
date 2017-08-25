@@ -1,5 +1,7 @@
 package com.hewentian.util;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -17,6 +19,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -225,6 +229,32 @@ public class ImageUtil {
 	}
 
 	/**
+	 * 给图片加上水印
+	 * 
+	 * @date 2017年8月25日 上午11:34:33
+	 * @param srcPath 要加水印的图片
+	 * @param destPath 加水印后的图片位置
+	 * @param waterMark 水印的字符
+	 * @param x x位置
+	 * @param y y位置
+	 * @throws Exception
+	 */
+	public static void addWaterMark(String srcPath, String destPath, String waterMark, int x, int y) throws Exception {
+		ImageInputStream iis = ImageIO.createImageInputStream(new FileInputStream(srcPath));
+		ImageReader reader = (ImageReader) ImageIO.getImageReaders(iis).next();
+		reader.setInput(iis);
+
+		BufferedImage image = reader.read(0);
+		Graphics graphics = image.getGraphics();
+		graphics.setColor(new Color(240, 100, 255, 255));
+		graphics.drawString(waterMark, x, y);
+
+		// Save modified image
+		ImageIO.write(image, "JPG", new FileOutputStream(destPath));
+		iis.close();
+	}
+
+	/**
 	 * 读取图片的 EXIF 信息
 	 * @date 2017年8月25日 上午10:58:05
 	 * @param file
@@ -245,6 +275,7 @@ public class ImageUtil {
 	
 	public static void main(String[] args) throws Exception {
 //		rotate("f://a1.jpg", "f://a3.jpg", 360);
-		readExif(new File("f:/ff2.jpg"));
+//		readExif(new File("f:/ff2.jpg"));
+		addWaterMark("F:/a1.jpg", "F:/ff3.jpg", "Hello World.", 20, 40);
 	}
 }
