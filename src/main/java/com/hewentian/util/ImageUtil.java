@@ -229,7 +229,7 @@ public class ImageUtil {
 	}
 
 	/**
-	 * 给图片加上水印
+	 * 给图片加上水印，会丢失图片 EXIF 信息
 	 * 
 	 * @date 2017年8月25日 上午11:34:33
 	 * @param srcPath 要加水印的图片
