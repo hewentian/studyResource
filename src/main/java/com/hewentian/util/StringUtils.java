@@ -131,4 +131,18 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 		byte b = (byte) "0123456789ABCDEF".indexOf(c);
 		return b;
 	}
+
+	public static String toHexString(String str) {
+		if (isBlank(str)) {
+			return null;
+		}
+
+		try {
+			return byte2hex(str.getBytes("UTF-8"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 }
