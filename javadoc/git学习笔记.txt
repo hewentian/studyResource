@@ -1513,3 +1513,11 @@ Git实用小技巧：git status 中文文件名编码问题解决
 解决这个问题方法是：
 
 git config --global core.quotepath false
+
+
+error: Untracked working tree file 'public/images/icon.gif' would be overwritten by merge.
+需要执行下面的命令才能修复：
+
+git reset --hard HEAD
+git clean -f -d
+git pull
