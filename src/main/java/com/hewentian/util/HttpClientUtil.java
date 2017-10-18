@@ -3,6 +3,8 @@ package com.hewentian.util;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,6 +28,10 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
@@ -411,6 +419,7 @@ public class HttpClientUtil {
 	 *            JSON对象
 	 * @param heads
 	 *            请求头
+	 * @see #postC(String, Object, Map)
 	 * @return
 	 */
 	public static String postSSL(String url, Object json, Map<String, String> heads) {
@@ -447,6 +456,80 @@ public class HttpClientUtil {
 			HttpEntity entity = response.getEntity();
 			result = EntityUtils.toString(entity, "UTF-8");
 		} catch (Exception e) {
+			log.error(e);
+		} finally {
+			if (response != null) {
+				try {
+					EntityUtils.consume(response.getEntity());
+				} catch (IOException e) {
+					log.error(e);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * 发送 POST 请求（HTTP, HTTPS），JSON形式
+	 * 
+	 * @param url
+	 * @param json
+	 *            json对象
+	 * @param params
+	 *            参数map
+	 * @param heads
+	 *            请求头, 可为 null
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
+	 */
+	public static String postC(String url, Object json, Map<String, String> heads) throws KeyManagementException,
+			NoSuchAlgorithmException {
+		// 采用绕过验证的方式处理https请求
+		SSLContext sslcontext = createSSLContext();
+
+		// 设置协议http和https对应的处理socket链接工厂的对象
+		Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
+				.register("http", PlainConnectionSocketFactory.INSTANCE)
+				.register("https", new SSLConnectionSocketFactory(sslcontext)).build();
+
+		PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+
+		// 创建自定义的httpClient对象
+		CloseableHttpClient httpClient = HttpClientBuilder.create().setConnectionManager(connManager).build();
+
+		CloseableHttpResponse response = null;
+		String result = null;
+
+		if (log.isInfoEnabled()) {
+			log.info("ready to post json: " + url);
+		}
+
+		try {
+			StringEntity stringEntity = new StringEntity(json.toString(), "UTF-8");// 解决中文乱码问题
+			stringEntity.setContentEncoding("UTF-8");
+			stringEntity.setContentType("application/json");
+
+			HttpPost httpPost = new HttpPost(url);
+			// 添加 header
+			if (null != heads && !heads.isEmpty()) {
+				for (Entry<String, String> e : heads.entrySet()) {
+					httpPost.addHeader(e.getKey(), e.getValue());
+				}
+			}
+			httpPost.setConfig(requestConfig);
+			httpPost.setEntity(stringEntity);
+
+			response = httpClient.execute(httpPost);
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (log.isInfoEnabled()) {
+				log.info("执行状态码 : " + statusCode);
+			}
+
+			HttpEntity entity = response.getEntity();
+			result = EntityUtils.toString(entity, "UTF-8");
+		} catch (IOException e) {
 			log.error(e);
 		} finally {
 			if (response != null) {
@@ -499,7 +582,39 @@ public class HttpClientUtil {
 		return sslsf;
 	}
 
-	public static void main(String[] args) {
+	/**
+	 * 绕过验证
+	 * 
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
+	 */
+	private static SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
+		SSLContext sc = SSLContext.getInstance("SSLv3");
+
+		// 实现一个X509TrustManager接口，用于绕过验证，不用修改里面的方法
+		X509TrustManager trustManager = new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
+					String paramString) throws CertificateException {
+			}
+
+			@Override
+			public void checkServerTrusted(java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
+					String paramString) throws CertificateException {
+			}
+
+			@Override
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		};
+
+		sc.init(null, new TrustManager[] { trustManager }, null);
+		return sc;
+	}
+
+	public static void main(String[] args) throws Exception {
 		String url = "https://{替换成你请求的地址}";
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("userName", "Tim Ho");
