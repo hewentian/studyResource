@@ -83,8 +83,8 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doGet(String url, Map<String, String> heads) {
-		return doGet(url, new HashMap<String, Object>(), heads);
+	public static String get(String url, Map<String, String> heads) {
+		return get(url, new HashMap<String, Object>(), heads);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doGet(String url, Map<String, Object> params, Map<String, String> heads) {
+	public static String get(String url, Map<String, Object> params, Map<String, String> heads) {
 		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 		String result = null;
 
@@ -149,8 +149,8 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doGetSSL(String url, Map<String, String> heads) {
-		return doGetSSL(url, new HashMap<String, Object>(), heads);
+	public static String getSSL(String url, Map<String, String> heads) {
+		return getSSL(url, new HashMap<String, Object>(), heads);
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doGetSSL(String url, Map<String, Object> params, Map<String, String> heads) {
+	public static String getSSL(String url, Map<String, Object> params, Map<String, String> heads) {
 		CloseableHttpClient httpClient = HttpClientBuilder.create()
 				.setSSLSocketFactory(createSSLConnectionSocketFactory()).setConnectionManager(connMgr)
 				.setDefaultRequestConfig(requestConfig).build();
@@ -217,8 +217,8 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doPost(String url, Map<String, String> heads) {
-		return doPost(url, new HashMap<String, Object>(), heads);
+	public static String post(String url, Map<String, String> heads) {
+		return post(url, new HashMap<String, Object>(), heads);
 	}
 
 	/**
@@ -232,7 +232,7 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doPost(String url, Map<String, Object> params, Map<String, String> heads) {
+	public static String post(String url, Map<String, Object> params, Map<String, String> heads) {
 		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 		CloseableHttpResponse response = null;
 		String result = null;
@@ -293,7 +293,7 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doPost(String url, Object json, Map<String, String> heads) {
+	public static String post(String url, Object json, Map<String, String> heads) {
 		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 		CloseableHttpResponse response = null;
 		String result = null;
@@ -351,7 +351,7 @@ public class HttpClientUtil {
 	 *            请求头, 可为 null
 	 * @return
 	 */
-	public static String doPostSSL(String url, Map<String, Object> params, Map<String, String> heads) {
+	public static String postSSL(String url, Map<String, Object> params, Map<String, String> heads) {
 		CloseableHttpClient httpClient = HttpClientBuilder.create()
 				.setSSLSocketFactory(createSSLConnectionSocketFactory()).setConnectionManager(connMgr)
 				.setDefaultRequestConfig(requestConfig).build();
@@ -413,7 +413,7 @@ public class HttpClientUtil {
 	 *            请求头
 	 * @return
 	 */
-	public static String doPostSSL(String url, Object json, Map<String, String> heads) {
+	public static String postSSL(String url, Object json, Map<String, String> heads) {
 		CloseableHttpClient httpClient = HttpClientBuilder.create()
 				.setSSLSocketFactory(createSSLConnectionSocketFactory()).setConnectionManager(connMgr)
 				.setDefaultRequestConfig(requestConfig).build();
@@ -509,7 +509,7 @@ public class HttpClientUtil {
 		heads.put("Content-Type", "application/json;charset=utf-8");
 		heads.put("Accept", "application/json");
 
-		String token = doPostSSL(url, JSON.toJSON(params), heads);
+		String token = postSSL(url, JSON.toJSON(params), heads);
 		if (log.isInfoEnabled()) {
 			log.info(token);
 		}
