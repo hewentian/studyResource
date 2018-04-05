@@ -29,7 +29,7 @@ public class PoiUtilTest {
 			data[0] = "7";
 			data[1] = "10394436";
 			data[2] = "小米";
-			data[3] = "http://img5.wtoip.com/07/35063012546AA3CDDBD1C7D30ED5D5D7.jpg";
+			data[3] = "http://img.hewentian.com/07/35063012546AA3CDDBD1C7D30ED5D5D7.jpg";
 			data[4] = "2012-01-05";
 			data[5] = "2012-01-05";
 
