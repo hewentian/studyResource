@@ -3,6 +3,9 @@ package com.hewentian.util;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
 /**
  * 
  * <p>
@@ -14,18 +17,34 @@ import java.util.Properties;
  * @since JDK 1.8
  */
 public final class Config {
+	private static Logger log = Logger.getLogger(Config.class);
+
 	private Config() {
 	}
 
 	private static Properties p = null;
 
 	static {
+		// default config
+		init("config.properties");
+	}
+
+	private static void init(String configName) {
 		try {
 			p = new Properties();
-			p.load(Config.class.getClassLoader().getResourceAsStream("config.properties"));
+			p.load(Config.class.getClassLoader().getResourceAsStream(configName));
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}
+	}
+
+	public static void load(String configName) {
+		if (StringUtils.isBlank(configName)) {
+			log.warn("你应该指定配置文件.");
+			return;
+		}
+
+		init(configName);
 	}
 
 	public static String get(String key, String defaultValue) {
