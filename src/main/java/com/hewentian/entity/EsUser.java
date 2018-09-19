@@ -55,6 +55,7 @@ public class EsUser {
 
 	@Override
 	public String toString() {
-		return "{name:" + name + ", age:" + age + "}";
+		return "EsUser [name=" + name + ", age=" + age + ", sex=" + sex + ", address=" + address + "]";
 	}
+
 }
