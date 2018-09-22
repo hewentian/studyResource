@@ -1,5 +1,10 @@
 package com.hewentian.entity;
 
+import java.util.Arrays;
+import java.util.Date;
+
+import io.searchbox.annotations.JestId;
+
 /**
  * 
  * <p>
@@ -7,18 +12,28 @@ package com.hewentian.entity;
  * </p>
  * 
  * @author <a href="mailto:wentian.he@qq.com">hewentian</a>
- * @date 2016年9月19日 上午10:32:14
- * @since JDK 1.7
+ * @date 2018-09-18 4:25:33 PM
+ * @since JDK 1.8
  * 
  */
-public class EsUser {
+public class EsUser implements Cloneable {
+	@JestId
+	private Long id;
 	private String name;
-	private String age;
-	private String sex;
-	private String address;
+	private Integer age;
+	private String[] tags;
+	private Date birthday;
 
 	public EsUser() {
 		super();
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -29,33 +44,33 @@ public class EsUser {
 		this.name = name;
 	}
 
-	public String getAge() {
+	public Integer getAge() {
 		return age;
 	}
 
-	public void setAge(String age) {
+	public void setAge(Integer age) {
 		this.age = age;
 	}
 
-	public String getSex() {
-		return sex;
+	public String[] getTags() {
+		return tags;
 	}
 
-	public void setSex(String sex) {
-		this.sex = sex;
+	public void setTags(String[] tags) {
+		this.tags = tags;
 	}
 
-	public String getAddress() {
-		return address;
+	public Date getBirthday() {
+		return birthday;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	public void setBirthday(Date birthday) {
+		this.birthday = birthday;
 	}
 
 	@Override
 	public String toString() {
-		return "EsUser [name=" + name + ", age=" + age + ", sex=" + sex + ", address=" + address + "]";
+		return "EsUser [id=" + id + ", name=" + name + ", age=" + age + ", tags=" + Arrays.toString(tags)
+				+ ", birthday=" + birthday + "]";
 	}
-
 }
