@@ -1,7 +1,13 @@
 package com.hewentian.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Calendar;
 import java.util.Date;
+
+import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -13,6 +19,7 @@ import java.util.Date;
  * @since JDK 1.7
  */
 public class CommonUtil {
+	private static Logger log = Logger.getLogger(CommonUtil.class);
 	public static final String TIMEZONE = "fwt|acst|awst|cast|wetdst|hmt|kst|wat|akdt|pdt|nst|mvt|cat|gst|bst|idlw|wet|cct|ist|est|cdt|nzst|mut|hst|ligt|east|nt|act|irt|sast|bdst|adt|iot|aft|cadt|fnt|sat|pst|mst|edt|eet|bt|hdt|jst|almst|eat|cetdst|zulu|met|dnt|jt|nzt|eetdst|sadt|ast|cest|akst|swt|idle|yst|fnst|nor|sst|ahst|nzdt|aest|sct|cst|acsst|mart|brst|mht|mmt|brt|ret|almt|tft|aesst|cxt|metdst|cet|ut|acst|ndt|klt|fst|wst|mdt|gmt|utc|mest|hkt";
 
 	/**
@@ -709,6 +716,52 @@ public class CommonUtil {
 		}
 
 		return count;
+	}
+	
+	/**
+	 * 检测网络资源是否存在
+	 *
+	 * @param strUrl
+	 * @return
+	 */
+	public static boolean isNetResourceAvailable(String strUrl) {
+		InputStream netFileInputStream = null;
+
+		try {
+			URL url = new URL(strUrl);
+			URLConnection urlConn = url.openConnection();
+			netFileInputStream = urlConn.getInputStream();
+			if (null != netFileInputStream) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IOException e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			try {
+				if (netFileInputStream != null)
+					netFileInputStream.close();
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+	}
+
+	/**
+	 * trim无法去掉 ascii 160 的空格
+	 * @param s
+	 * @return
+	 */
+	public static String trim(String s) {
+		if (null == s || s.length() == 0) {
+			return s;
+		}
+
+		s = s.replaceAll("[\\u00A0]+", "");
+		s = s.trim();
+		return s;
 	}
 
 	public static void main(String[] args) {
