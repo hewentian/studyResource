@@ -295,8 +295,6 @@ public class HttpClientUtil {
 	 * @param url
 	 * @param json
 	 *            json对象
-	 * @param params
-	 *            参数map
 	 * @param heads
 	 *            请求头, 可为 null
 	 * @return
@@ -476,8 +474,6 @@ public class HttpClientUtil {
 	 * @param url
 	 * @param json
 	 *            json对象
-	 * @param params
-	 *            参数map
 	 * @param heads
 	 *            请求头, 可为 null
 	 * @return
