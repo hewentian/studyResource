@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="create_crawler_jar" name="hewentian-crawler" basedir=".">
+	<property name="LibDir" location="lib" />
+	<property name="ClassesDir" location="bin" />
+	<property name="BuildDir" location="build" />
+	<property name="BuildFile" location="${BuildDir}/hewentian-crawler.jar" />
+	<property name="Main-Class" value="" />
+
+	<path id="classpath">
+		<fileset dir="${LibDir}">
+			<include name="**/*.jar" />
+			<include name="**/*.zip" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="${BuildDir}" />
+		<delete file="${BuildFile}" />
+	</target>
+
+	<target name="create_crawler_jar" depends="init">
+		<jar destfile="${BuildFile}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Build-By" value="${user.name}" />
+				<attribute name="Main-Class" value="${Main-Class}" />
+				<attribute name="Class-Path" value="" />
+			</manifest>
+			<fileset dir="${ClassesDir}">
+				<exclude name="**/*.properties" />
+			</fileset>
+		</jar>
+	</target>
+</project>
