@@ -1,0 +1,22 @@
+<dataConfig>
+	<dataSource name="ds" type="JdbcDataSource" driver="com.mysql.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/test" user="root" password="root" />
+	<document>
+		<entity name="user" pk="id" dataSource="ds" query="select * from user"
+			deltaQuery="select id from user where update_time_>'${dataimporter.last_index_time}'"
+			deltaImportQuery="select t.* from user t where t.id='${dataimporter.delta.id}'">
+			<field name="id" column="id" />
+			<field name="name" column="name_" />
+			<field name="age" column="age_" />
+			<field name="ability" column="ability_" />
+			<field name="address" column="address_" />
+
+			<!-- 将DB中的多个列，在solr中以数组形式存储到一个field中 -->
+			<field name="schools" column="school1_" />
+			<field name="schools" column="school2_" />
+			<field name="schools" column="school3_" />
+
+			<field name="update_time" column="update_time_" />
+		</entity>
+	</document>
+</dataConfig>

@@ -1,0 +1,52 @@
+html {
+    background: #63bad8 50% 0 repeat-x;
+    text-align: center;
+}
+body {
+    text-align: center;
+    font: 12px 'Lucida Grande',lucida,helvetica,arial,sans-serif;
+    color: #333333;
+    padding: 0;
+    margin: 0 auto;
+    width: 940px;
+}
+input{
+    height: 20px;
+    width: 200px;
+    margin-top: 15px;
+    padding: 3px;
+    font: 16px 'Lucida Grande', arial, sans-serif;
+}
+input .check {
+    width: 25px;
+}
+.unlock_top{
+    width: 900px;
+    height: 20px;
+    margin: 80px 0 0 0;
+    padding: 0 20px 0 20px;
+}
+.unlock_message{
+    color: #000000;
+    font-size: 13px;
+}
+.unlock_main{
+    background: #FFFFFF;
+    padding-bottom: 1px;
+}
+.unlock_main#input{
+    margin-top: 5px;
+}
+.unlock_sm{
+    width: 910px;
+    margin: 15px 15px 0 15px;
+    border: solid 1px #FFA500;
+}
+.unlock_mail{
+    width: 910px;
+    margin: 15px 15px 15px 15px;
+    border: solid 1px #FF6347;
+}
+.unlock_main#p{
+    font-size: 40px;
+}

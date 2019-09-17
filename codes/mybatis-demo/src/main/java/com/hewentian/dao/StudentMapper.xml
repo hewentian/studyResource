@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hewentian.dao.StudentMapper">
+	<resultMap id="BaseResultMap" type="com.hewentian.entity.Student">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="age" property="age" jdbcType="INTEGER" />
+		<result column="birthday" property="birthday" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<select id="getList" resultMap="BaseResultMap"
+		parameterType="com.hewentian.entity.StudentCriteria" statementType="PREPARED">
+		select * from student where ${name}
+		<if test="rowBounds != null">
+			offset #{rowBounds.offset} limit #{rowBounds.limit}
+		</if>
+	</select>
+
+	<select id="getCount" parameterType="com.hewentian.entity.StudentCriteria"
+		resultType="java.lang.Long" statementType="PREPARED">
+		select count(*) from
+		student
+		where ${name}
+	</select>
+
+	<select id="getCountNew" parameterType="com.hewentian.entity.Criteria"
+		resultType="java.lang.Long" statementType="PREPARED">
+		select count(*) from
+		student
+		where name like CONCAT('%',#{condition.name,jdbcType=VARCHAR},'%')
+	</select>
+
+	<select id="getById" parameterType="java.lang.String" resultMap="BaseResultMap"
+		statementType="PREPARED">
+		select * from student
+		where id =
+		#{id,jdbcType=VARCHAR}
+	</select>
+
+	<insert id="add" statementType="PREPARED" parameterType="com.hewentian.entity.Student">
+		INSERT
+		INTO student(id, name, age, birthday)
+		VALUES
+		(#{id,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{age,jdbcType=INTEGER},
+		#{birthday,jdbcType=TIMESTAMP});
+	</insert>
+
+	<update id="update" statementType="PREPARED" parameterType="com.hewentian.entity.Student">
+		UPDATE student
+		SET
+		id=#{id,jdbcType=VARCHAR},
+		name=#{name,jdbcType=VARCHAR},
+		age=#{age,jdbcType=INTEGER},
+		birthday=#{birthday,jdbcType=TIMESTAMP}
+		WHERE
+		id =
+		#{id,jdbcType=VARCHAR};
+	</update>
+
+	<update id="updateByUserid" statementType="PREPARED"
+		parameterType="map">
+		UPDATE student
+		SET
+		id=#{student.id,jdbcType=VARCHAR},
+		name=#{student.name,jdbcType=VARCHAR},
+		age=#{student.age,jdbcType=INTEGER},
+		birthday=#{student.birthday,jdbcType=TIMESTAMP}
+		WHERE
+		id =
+		#{oldId,jdbcType=VARCHAR};
+	</update>
+
+	<delete id="delete" parameterType="java.lang.String"
+		statementType="PREPARED">
+		DELETE FROM student
+		WHERE id =
+		#{id,jdbcType=VARCHAR};
+	</delete>
+</mapper>

@@ -1,2 +1,2 @@
-# studyResource
+# study-lib
 store some study resources

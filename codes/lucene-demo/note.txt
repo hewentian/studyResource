@@ -1,0 +1,179 @@
+StandardAnalyzer是lucene中内置的“标准分析器”，可以做如下功能:
+对原有句子按照空格进行了分词
+所有的大写字母都可以能转换为小写的字母
+可以去掉一些没有用处的单词，例如"is","the","are"等单词，也删除了所有的标点
+
+1、创建一个索引时，涉及的重要类有以下几个：
+
+（1）IndexWriter：索引过程中的核心组件，用于创建新索引或者打开已有索引，以及向索引中添加、删除、更新被索引文档的信息。
+
+（2）Document：代表一些域(field)的集合。
+
+（3）Field及其子类：一个域，如文档创建时间，作者，内容等。
+
+（4）Analyzer：分析器。
+
+（5）Directory：可用于描述Lucene索引的存放位置。
+
+2、索引文档的基本步骤如下：
+
+（1）创建索引库IndexWriter
+（2）根据文件创建文档Document
+（3）向索引库中写入文档内容
+
+
+3、索引、Document、Filed之间的关系
+
+简而言之，多个Filed组成一个Document，多个Document组成一个索引。
+
+它们之间通过以下方法相互调用：
+Document doc = new Document();
+Field pathField = new StringField("path", filetoIndex.getPath(),Field.Store.YES);
+doc.add(pathField);
+
+writer.addDocument(doc);
+
+二、关于Field
+
+（一）创建一个域（field）的基本方法
+
+1、在Lucene4.x前，使用以下方式创建一个Field：
+
+Filed的四个参数分别代表：
+域的名称
+域的值
+是否保存
+是否分析，对于文件名称，url，文件路径等内容，不需要对其进行分析。
+
+2、在Lucene4后，定义了大量的Field的实现类型，根据需要，直接使用其中一个，不再使用笼统的Field来直接创建域。
+Direct Known Subclasses:
+BinaryDocValuesField, DoubleField, FloatField,IntField, LongField, NumericDocValuesField, SortedDocValuesField, SortedSetDocValuesField, StoredField, StringField,TextField
+例如，对于上述三个Filed，可相应的改为：
+
+<pre name="code" class="java">Field field = new StringField("path", filetoIndex.getPath(),Field.Store.YES);
+Field field = new LongField("modified", filetoIndex.lastModified(),Field.Store.NO);
+Field field = new TextField("contents", new FileReader(filetoIndex));
+
+在4.x以后，StringField即为NOT_ANALYZED的（即不对域的内容进行分割分析），而textField是ANALYZED的，因此，创建Field对象时，无需再指定此属性。见http://stackoverflow.com/questions/19042587/how-to-prevent-a-field-from-not-analyzing-in-lucene
+即每一个Field的子类均具有默认的是否INDEXED与ANALYZED属性，不再需要显式指定。
+官方文档：
+StringField: A field that is indexed but not tokenized: the entire String value is indexed as a single token. For example this might be used for a 'country' field or an 'id' field, or any field that you intend to use for sorting or access through the field cache
+TextField: A field that is indexed and tokenized,without term vectors. For example this would be used on a 'body' field, that contains the bulk of a document's text.
+（二）有关于Field的一些选项
+1、Field.Store.Yes/No
+在创建一个Field的时候，需要传入一个参数，用于指定内容是否需要存储到索引中。这些被存储的内容可以在搜索结果中返回，呈现给用户。
+二者最直观的差异在于：使用document.get("fileName")时，是否可以返回内容。
+比如，一个文件的标题通常都是Field.Store.Yes，因为其内容一般需要呈现给用户，文件的作者、摘要等信息也一样。
+但一个文件的内容可能就没必要保存了，一方面是文件内容太大，另一方面是没必要在索引中保存其信息，因为可以引导用户进入原有文件即可。
+2、加权
+可以对Filed及Document进行加权。注意加权是影响返回结果顺序的一个因素，但也仅仅是一个因素，它和其它因素一起构成了Lucene的排序算法。
+（三）对富文本（非纯文本）的索引
+上述的对正文的索引语句：
+Field field = new TextField("contents", new FileReader(filetoIndex));
+只对纯文本有效。对于word，excel，pdf等富文本，FileReader读取到的内容只是一些乱码，并不能形成有效的索引。
+若需要对此类文本进行索引，需要使用Tika等工具先将其正文内容提取出来，然后再进行索引。
+http://stackoverflow.com/questions/16640292/lucene-4-2-0-index-pdf
+Lucene doesn't handle files at all, really. That demo handles plain text files, but core Lucene doesn't. FileStreamReader is a Java standard stream reader, and for your purposes, it will only handle plain text. This works on the Unix philosophy. Lucene indexes content. Tika extracts content from rich documents. I've added links to a couple of examples using Tika, one with Lucene directly, the other using Solr (which you might want to consider as well). 
+一个简单示例如下：
+首先使用Tika提取word中的正文，再使用TextField索引文字。
+
+doc.add(new TextField("contents", TikaBasicUtil.extractContent(filetoIndex),Field.Store.NO));
+注意此处不能使用StringField，因为StringField限制了字符串的大小不能超过32766，否则会报异常IllegalArgumentException:Document contains at least one immense term in field="contents" (whose UTF8 encoding is longer than the max length 32766)*/
+
+使用Tika索引富文本的简单示例如下：
+注意，此示例不仅可以索引word，还可以索引pdf,excel等。
+
+1、关键类
+
+Lucene的搜索过程中涉及的主要类有以下几个：
+
+（1）IndexSearcher：执行search()方法的类
+
+（2）IndexReader：对索引文件进行读操作，并为IndexSearcher提供搜索接口
+
+（3）Query及其子类：查询对象，search()方法的重要参数
+
+（4）QueryParser：根据用户输入的搜索词汇生成Query对象。
+
+（5）TopDocs：search()方法返回的前n个文档
+
+（6）ScoreDocs：提供TopDocs中搜索结果的访问接口
+
+
+2、搜索的关键步骤
+
+（1）创建IndexReader
+
+（2）使用IndexReader创建IndexSearcher
+
+（3）根据搜索关键字，使用QueryParser生成Query对象
+
+（4）以Query作为参数调用IndexSearcher.search()，执行搜索
+
+（5）以TopDocs以及ScoreDocs遍历结果并处理
+
+
+1、基础内容
+
+（1）相关概念
+
+分析(Analysis)，在Lucene中指的是将域(Field)文本转换成最基本的索引表示单元--项(Term)的过程。在搜索过程中，这些项用于决定什么样的文档能够匹配查词条件。
+
+分析器对分析操作进行了封装，它通过执行若干操作，将文本转化成语汇单元，这个处理过程也称为语汇单元化过程(tokenization)，而从文本洲中提取的文本块称为语汇单元(token)。词汇单元与它的域名结合后，就形成了项。
+
+（2）何时使用分析器
+
+建立索引期间
+		Directory returnIndexDir = FSDirectory.open(indexDir);
+
+		IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_48,
+				new StandardAnalyzer(Version.LUCENE_48));
+
+		IndexWriter writer = new IndexWriter(returnIndexDir, iwc);
+使用QueryParser对象进行搜索时
+QueryParser parser = new QueryParser(Version.LUCENE_48, "contents",
+				new SimpleAnalyzer(Version.LUCENE_48));
+				
+在搜索中高亮显示结果时
+（3）常用的4个分析器：
+WhitespaceAnalyzer, as the name implies, simply splits text into tokens on whitespace characters and makes no other effort to normalize the tokens.
+SimpleAnalyzer first splits tokens at non-letter characters, then lowercases each token. Be careful! This analyzer quietly discards numeric characters.
+StopAnalyzer is the same as SimpleAnalyzer, except it removes common words (called stop words, described more in section XXX). By default it removes common words in the English language (the, a, etc.), though you can pass in your own set.
+StandardAnalyzer is Lucene’s most sophisticated core analyzer. It has quite a bit of logic to identify certain kinds of tokens, such as company names,				
+
+在每次向writer中添加文档时，可以针对该文档指定一个分析器，如
+writer.addDocument(doc, new SimpleAnalyzer(Version.LUCENE_48));
+
+
+TermQuery
+
+1、创建方式
+searcher.search( new TermQuery(new Term("contents","java")), 10);
+
+2、适用范围
+
+（1）直接使用TermQuery，不对搜索词作任何的分析，包括大小写都不作转换，而使用QueryParser，则可以根据Analyzer的类型作分析。
+
+（2）TermQuery适合使用于完全匹配的搜索，如搜索id号，二维码，姓名等。
+
+三、BooleanQuery
+
+1、创建方式
+
+（1）使用BooleanQuery
+
+多个搜索条件组成BooleanQuey对象，以后补充例子。
+
+（2）使用QueryParser
+
+对于一个QueryParser，若其未指定是何种逻辑操作，则其将默认为Operator.OR。因此，若搜索 java web，则其会认为java OR web。
+
+而对于中文，使用StandartAnalyzer分析器时，会将每个字作为一个词汇。如搜索“学习”，则搜索“学 OR 习”。
+
+因此，为指定搜索“学习”或者'java web"等，必须显示指定逻辑操作为Operator.AND。
+
+QueryParser parser = new QueryParser(Version.LUCENE_48, "contents",
+				new StandardAnalyzer(Version.LUCENE_48));
+parser.setDefaultOperator(Operator.AND);
+Query query  = parser.parse(term);
+

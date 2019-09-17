@@ -1,0 +1,1 @@
+This indexes the documents in docsPath, creating a Lucene index in indexPath that can be searched with SearchFiles.
