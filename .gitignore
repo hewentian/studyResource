@@ -5,3 +5,6 @@ bin/
 .settings/
 .eclipse
 .idea/
+*.iws
+*.iml
+*.ipr
