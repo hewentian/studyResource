@@ -5,6 +5,7 @@ public class BreakLabel {
         outer:
         for (int i = 0; i < 10; i++) {
             System.out.println("Outer loop, i = " + i);
+
             inner:
             while (true) {
                 int k = System.in.read();

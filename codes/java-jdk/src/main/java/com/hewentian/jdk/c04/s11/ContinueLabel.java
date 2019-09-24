@@ -23,6 +23,7 @@ public class ContinueLabel {
             foundIt = true;
             break test;
         }
-        System.out.println(foundIt ? "Fould it" : "Didn't find it");
+
+        System.out.println(foundIt ? "Found it" : "Didn't find it");
     }
 }
