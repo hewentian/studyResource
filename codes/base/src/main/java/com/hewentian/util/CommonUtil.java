@@ -764,6 +764,22 @@ public class CommonUtil {
 		return s;
 	}
 
+	// 将字节转成16进制数的表达方式。
+	public static String byte2hex(byte[] b) {
+		String hs = " ";
+		String stmp = " ";
+		for (int n = 0; n < b.length; n++) {
+			stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+			if (stmp.length() == 1)
+				hs = hs + "0 " + stmp;
+			else
+				hs = hs + stmp;
+			if (n < b.length - 1)
+				hs = hs + ": ";
+		}
+		return hs.toUpperCase();
+	}
+
 	public static void main(String[] args) {
 		// System.out.println(fullWidth2halfWidth("a９；ａｂｃａｂ")); // output:
 		// a9;abcab
